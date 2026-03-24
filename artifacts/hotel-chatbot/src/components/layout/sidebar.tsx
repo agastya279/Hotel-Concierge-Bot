@@ -1,0 +1,187 @@
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { Plus, MessageSquare, Trash2, X, Menu, Hotel } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
+import { 
+  useListOpenaiConversations, 
+  useCreateOpenaiConversation, 
+  useDeleteOpenaiConversation,
+  getListOpenaiConversationsQueryKey
+} from "@workspace/api-client-react";
+import { format } from "date-fns";
+import { LuxuryButton } from "@/components/ui/luxury-button";
+import { cn } from "@/lib/utils";
+
+export function Sidebar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+
+  const { data: conversations = [], isLoading } = useListOpenaiConversations();
+  const { mutate: createConv, isPending: isCreating } = useCreateOpenaiConversation();
+  const { mutate: deleteConv } = useDeleteOpenaiConversation();
+
+  const handleCreate = () => {
+    createConv(
+      { data: { title: "New Conversation" } },
+      {
+        onSuccess: (newConv) => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+          setLocation(`/c/${newConv.id}`);
+          setIsOpen(false);
+        }
+      }
+    );
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    deleteConv(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+          if (location === `/c/${id}`) {
+            setLocation("/");
+          }
+        }
+      }
+    );
+  };
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-card border-r border-border">
+      <div className="p-6 flex flex-col gap-6">
+        <Link href="/" onClick={() => setIsOpen(false)}>
+          <div className="flex items-center gap-3 cursor-pointer group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent flex items-center justify-center border border-primary/30 group-hover:border-primary/60 transition-colors">
+              <Hotel className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl leading-none text-gradient-gold">Grand Azure</h2>
+              <span className="text-xs text-muted-foreground uppercase tracking-widest">Concierge</span>
+            </div>
+          </div>
+        </Link>
+
+        <LuxuryButton 
+          className="w-full justify-start gap-2" 
+          onClick={handleCreate}
+          isLoading={isCreating}
+        >
+          <Plus className="w-4 h-4" />
+          Start New Request
+        </LuxuryButton>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-3 pb-6">
+        <div className="text-xs font-medium text-muted-foreground mb-3 px-3 uppercase tracking-wider">
+          Recent Requests
+        </div>
+        
+        <div className="space-y-1">
+          {isLoading ? (
+            <div className="px-3 py-4 text-sm text-muted-foreground animate-pulse">Loading history...</div>
+          ) : conversations.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-muted-foreground text-center border border-dashed border-border rounded-xl">
+              No conversations yet
+            </div>
+          ) : (
+            conversations.map((conv) => {
+              const isActive = location === `/c/${conv.id}`;
+              return (
+                <Link key={conv.id} href={`/c/${conv.id}`} onClick={() => setIsOpen(false)}>
+                  <div className={cn(
+                    "group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all duration-200",
+                    isActive 
+                      ? "bg-primary/10 border border-primary/20" 
+                      : "hover:bg-accent/30 border border-transparent hover:border-border/50"
+                  )}>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <MessageSquare className={cn(
+                        "w-4 h-4 shrink-0 transition-colors", 
+                        isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"
+                      )} />
+                      <div className="flex flex-col truncate">
+                        <span className={cn(
+                          "text-sm truncate transition-colors",
+                          isActive ? "text-foreground font-medium" : "text-muted-foreground group-hover:text-foreground"
+                        )}>
+                          {conv.title}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/60 mt-0.5">
+                          {format(new Date(conv.createdAt), "MMM d, h:mm a")}
+                        </span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={(e) => handleDelete(e, conv.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-destructive/20 hover:text-destructive rounded-md transition-all shrink-0 text-muted-foreground"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </Link>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Header & Toggle */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 glass-panel border-b border-border/50 z-40 flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <Hotel className="w-5 h-5 text-primary" />
+          <h1 className="font-display text-lg text-gradient-gold">Grand Azure</h1>
+        </div>
+        <button 
+          onClick={() => setIsOpen(true)}
+          className="p-2 text-muted-foreground hover:text-primary transition-colors"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block w-72 lg:w-80 h-screen shrink-0 relative z-10">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="md:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            />
+            <motion.div 
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="md:hidden fixed inset-y-0 left-0 w-4/5 max-w-sm z-50 shadow-2xl"
+            >
+              <SidebarContent />
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-primary bg-background/50 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
