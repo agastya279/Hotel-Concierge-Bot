@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, conversations, messages } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import {
   CreateOpenaiConversationBody,
   GetOpenaiConversationParams,
@@ -35,7 +35,7 @@ router.get("/conversations", async (req, res) => {
     const convs = await db
       .select()
       .from(conversations)
-      .orderBy(conversations.createdAt);
+      .orderBy(asc(conversations.createdAt));
     res.json(convs);
   } catch (err) {
     req.log.error({ err }, "Failed to list conversations");
@@ -62,15 +62,23 @@ router.get("/conversations/:id", async (req, res) => {
     const { id } = GetOpenaiConversationParams.parse({
       id: Number(req.params.id),
     });
-    const conv = await db.query.conversations.findFirst({
-      where: eq(conversations.id, id),
-      with: { messages: { orderBy: (m, { asc }) => [asc(m.createdAt)] } },
-    });
+    const [conv] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
+
     if (!conv) {
       res.status(404).json({ error: "Conversation not found" });
       return;
     }
-    res.json(conv);
+
+    const msgs = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, id))
+      .orderBy(asc(messages.createdAt));
+
+    res.json({ ...conv, messages: msgs });
   } catch (err) {
     req.log.error({ err }, "Failed to get conversation");
     res.status(500).json({ error: "Internal server error" });
@@ -106,7 +114,7 @@ router.get("/conversations/:id/messages", async (req, res) => {
       .select()
       .from(messages)
       .where(eq(messages.conversationId, id))
-      .orderBy(messages.createdAt);
+      .orderBy(asc(messages.createdAt));
     res.json(msgs);
   } catch (err) {
     req.log.error({ err }, "Failed to list messages");
@@ -121,15 +129,21 @@ router.post("/conversations/:id/messages", async (req, res) => {
     });
     const body = SendOpenaiMessageBody.parse(req.body);
 
-    const conv = await db.query.conversations.findFirst({
-      where: eq(conversations.id, id),
-      with: { messages: { orderBy: (m, { asc }) => [asc(m.createdAt)] } },
-    });
+    const [conv] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
 
     if (!conv) {
       res.status(404).json({ error: "Conversation not found" });
       return;
     }
+
+    const priorMessages = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, id))
+      .orderBy(asc(messages.createdAt));
 
     await db.insert(messages).values({
       conversationId: id,
@@ -137,7 +151,7 @@ router.post("/conversations/:id/messages", async (req, res) => {
       content: body.content,
     });
 
-    const chatHistory = conv.messages.map((m) => ({
+    const chatHistory = priorMessages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
