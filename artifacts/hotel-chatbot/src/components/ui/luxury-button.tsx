@@ -12,7 +12,7 @@ export const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, children, disabled, ...props }, ref) => {
     
     const variants = {
-      primary: "bg-gradient-to-r from-primary/90 to-primary text-primary-foreground shadow-[0_0_15px_rgba(212,175,55,0.15)] hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 border border-primary/50",
+      primary: "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:-translate-y-0.5 border border-primary/50",
       secondary: "bg-muted text-foreground border border-border hover:border-primary/50 hover:bg-accent/50",
       ghost: "bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/5",
       destructive: "bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/40"
