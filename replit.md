@@ -1,5 +1,19 @@
 # Workspace
 
+## GitHub Push (Pending)
+
+GitHub OAuth was dismissed during setup. To push to GitHub, run these commands in the Shell:
+
+```bash
+# 1. Create a repo on github.com first, then:
+git remote add github https://<your-token>@github.com/<username>/<repo>.git
+git push github master
+```
+
+Or provide a GitHub Personal Access Token (PAT with `repo` scope) so it can be stored as a secret and the push can be automated.
+
+
+
 ## Overview
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
@@ -90,6 +104,10 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 ### `lib/api-client-react` (`@workspace/api-client-react`)
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
+
+### `lib/replit-auth-web` (`@workspace/replit-auth-web`)
+
+Browser auth package. Exports `useAuth()` hook for auth state, login, and logout. Uses OIDC via the API server. **Do not use generated API client for auth — always use this package.**
 
 ### `scripts` (`@workspace/scripts`)
 
