@@ -2,7 +2,11 @@ import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { useAuth } from "@workspace/replit-auth-web";
 import NotFound from "@/pages/not-found";
+import LoginPage from "@/pages/login";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import WelcomePage from "@/pages/welcome";
@@ -16,6 +20,29 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        >
+          <Sparkles className="w-7 h-7 text-primary/40" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return <>{children}</>;
+}
 
 function Router() {
   return (
@@ -34,7 +61,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
+          <AuthGate>
+            <Router />
+          </AuthGate>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
