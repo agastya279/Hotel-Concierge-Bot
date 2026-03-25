@@ -33,13 +33,16 @@ export default function WelcomePage() {
   const queryClient = useQueryClient();
   const { mutate: createConv, isPending } = useCreateOpenaiConversation();
 
-  const handleStart = (suggestedTitle?: string) => {
+  const handleStart = (suggestion?: string) => {
     createConv(
-      { data: { title: suggestedTitle || "New Request" } },
+      { data: { title: suggestion || "New Request" } },
       {
         onSuccess: (newConv) => {
           queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-          setLocation(`/c/${newConv.id}`);
+          const path = suggestion
+            ? `/c/${newConv.id}?init=${encodeURIComponent(suggestion)}`
+            : `/c/${newConv.id}`;
+          setLocation(path);
         },
       }
     );

@@ -70,8 +70,9 @@ export function useChatStream(conversationId: number | undefined) {
       // Slight delay before clearing optimistic state so fetched data has time to render
       setTimeout(() => {
         setOptimisticUserMessage(null);
+        setStreamedContent("");
         setIsStreaming(false);
-      }, 100);
+      }, 150);
     }
   }, [conversationId, queryClient]);
 

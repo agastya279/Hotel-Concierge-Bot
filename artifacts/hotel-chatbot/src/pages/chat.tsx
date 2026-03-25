@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "wouter";
+import { useParams, useSearch } from "wouter";
 import { Send, Sparkles, Hotel } from "lucide-react";
 import { useGetOpenaiConversation, useListOpenaiMessages } from "@workspace/api-client-react";
 import { useChatStream } from "@/hooks/use-chat-stream";
@@ -8,10 +8,12 @@ import { LuxuryButton } from "@/components/ui/luxury-button";
 
 export default function ChatPage() {
   const { id } = useParams();
+  const search = useSearch();
   const conversationId = id ? parseInt(id, 10) : undefined;
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
+  const autoSentRef = useRef(false);
 
   const { data: conversation, isLoading: isConvLoading } = useGetOpenaiConversation(conversationId as number, {
     query: { enabled: !!conversationId }
@@ -22,6 +24,17 @@ export default function ChatPage() {
   });
 
   const { sendMessage, isStreaming, streamedContent, optimisticUserMessage } = useChatStream(conversationId);
+
+  // Auto-send initial message from suggestion chip (?init=...)
+  useEffect(() => {
+    if (autoSentRef.current || !conversationId || isConvLoading || isMessagesLoading) return;
+    const params = new URLSearchParams(search);
+    const initMsg = params.get("init");
+    if (initMsg && messages.length === 0) {
+      autoSentRef.current = true;
+      sendMessage(initMsg);
+    }
+  }, [conversationId, isConvLoading, isMessagesLoading, messages.length, search, sendMessage]);
 
   // Auto-scroll to bottom
   useEffect(() => {
