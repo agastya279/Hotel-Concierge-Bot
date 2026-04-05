@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Plus, MessageSquare, Trash2, X, Menu, Hotel, LogOut } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, Menu, Hotel } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@workspace/replit-auth-web";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useListOpenaiConversations, 
@@ -18,7 +17,6 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { user, logout } = useAuth();
 
   const { data: conversations = [], isLoading } = useListOpenaiConversations();
   const { mutate: createConv, isPending: isCreating } = useCreateOpenaiConversation();
@@ -79,7 +77,7 @@ export function Sidebar() {
         </LuxuryButton>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 pb-2">
+      <div className="flex-1 overflow-y-auto px-2 pb-4">
         <div className="text-[11px] font-semibold text-muted-foreground mb-2 px-2 uppercase tracking-widest">
           Recent Requests
         </div>
@@ -126,42 +124,6 @@ export function Sidebar() {
           )}
         </div>
       </div>
-
-      {/* User profile footer */}
-      {user && (
-        <div className="shrink-0 px-3 py-3 border-t border-border/50">
-          <div className="flex items-center gap-2.5">
-            {user.profileImageUrl ? (
-              <img
-                src={user.profileImageUrl}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <span className="text-xs font-semibold text-primary">
-                  {(user.firstName?.[0] ?? user.email?.[0] ?? "?").toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-foreground truncate">
-                {user.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user.email ?? "Guest"}
-              </p>
-              {user.email && (
-                <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
-              )}
-            </div>
-            <button
-              onClick={logout}
-              title="Log out"
-              className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 
