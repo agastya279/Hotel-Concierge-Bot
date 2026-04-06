@@ -17,6 +17,11 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _sessionIdGetter: (() => string | null) | null = null;
+
+export function setSessionIdGetter(getter: (() => string | null) | null): void {
+  _sessionIdGetter = getter;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -344,6 +349,12 @@ export async function customFetch<T = unknown>(
 
   if (responseType === "json" && !headers.has("accept")) {
     headers.set("accept", DEFAULT_JSON_ACCEPT);
+  }
+
+  // Attach session ID for conversation isolation
+  if (_sessionIdGetter && !headers.has("x-session-id")) {
+    const sid = _sessionIdGetter();
+    if (sid) headers.set("x-session-id", sid);
   }
 
   // Attach bearer token when an auth getter is configured and no

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListOpenaiMessagesQueryKey } from "@workspace/api-client-react";
+import { getSessionId } from "@/lib/session";
 
 export function useChatStream(conversationId: number | undefined) {
   const [isStreaming, setIsStreaming] = useState(false);
@@ -19,7 +20,10 @@ export function useChatStream(conversationId: number | undefined) {
     try {
       const response = await fetch(`/api/openai/conversations/${conversationId}/messages`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Session-ID": getSessionId(),
+        },
         body: JSON.stringify({ content }),
       });
 

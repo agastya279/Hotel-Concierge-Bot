@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, conversations, messages } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import {
   CreateOpenaiConversationBody,
   GetOpenaiConversationParams,
@@ -82,12 +82,17 @@ Every room features:
 
 Always answer as Aria — enthusiastic, knowledgeable, and proud of SEED Resort's innovation. If a guest asks something very specific you cannot answer, say you will connect them with the relevant team. Never make up prices or availability unless stated above.`;
 
+function getSessionId(req: import("express").Request): string {
+  return (req.headers["x-session-id"] as string) ?? "";
+}
 
 router.get("/conversations", async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const convs = await db
       .select()
       .from(conversations)
+      .where(eq(conversations.sessionId, sessionId))
       .orderBy(asc(conversations.createdAt));
     res.json(convs);
   } catch (err) {
@@ -98,10 +103,11 @@ router.get("/conversations", async (req, res) => {
 
 router.post("/conversations", async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const body = CreateOpenaiConversationBody.parse(req.body);
     const [conv] = await db
       .insert(conversations)
-      .values({ title: body.title })
+      .values({ title: body.title, sessionId })
       .returning();
     res.status(201).json(conv);
   } catch (err) {
@@ -112,13 +118,14 @@ router.post("/conversations", async (req, res) => {
 
 router.get("/conversations/:id", async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const { id } = GetOpenaiConversationParams.parse({
       id: Number(req.params.id),
     });
     const [conv] = await db
       .select()
       .from(conversations)
-      .where(eq(conversations.id, id));
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)));
 
     if (!conv) {
       res.status(404).json({ error: "Conversation not found" });
@@ -140,12 +147,13 @@ router.get("/conversations/:id", async (req, res) => {
 
 router.delete("/conversations/:id", async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const { id } = DeleteOpenaiConversationParams.parse({
       id: Number(req.params.id),
     });
     const [deleted] = await db
       .delete(conversations)
-      .where(eq(conversations.id, id))
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)))
       .returning();
     if (!deleted) {
       res.status(404).json({ error: "Conversation not found" });
@@ -160,9 +168,19 @@ router.delete("/conversations/:id", async (req, res) => {
 
 router.get("/conversations/:id/messages", async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const { id } = ListOpenaiMessagesParams.parse({
       id: Number(req.params.id),
     });
+    // Verify ownership
+    const [conv] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)));
+    if (!conv) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
     const msgs = await db
       .select()
       .from(messages)
@@ -177,6 +195,7 @@ router.get("/conversations/:id/messages", async (req, res) => {
 
 router.post("/conversations/:id/messages", async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const { id } = SendOpenaiMessageParams.parse({
       id: Number(req.params.id),
     });
@@ -185,7 +204,7 @@ router.post("/conversations/:id/messages", async (req, res) => {
     const [conv] = await db
       .select()
       .from(conversations)
-      .where(eq(conversations.id, id));
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)));
 
     if (!conv) {
       res.status(404).json({ error: "Conversation not found" });
