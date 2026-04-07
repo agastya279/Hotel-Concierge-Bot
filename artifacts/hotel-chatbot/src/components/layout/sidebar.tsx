@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Plus, MessageSquare, Trash2, X, Menu, Hotel } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, Menu, Hotel, LogIn, LogOut, User, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
@@ -12,17 +12,26 @@ import {
 import { format } from "date-fns";
 import { LuxuryButton } from "@/components/ui/luxury-button";
 import { cn } from "@/lib/utils";
+import { useAuthContext } from "@/contexts/auth-context";
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading: isAuthLoading, user, login, logout } = useAuthContext();
 
-  const { data: conversations = [], isLoading } = useListOpenaiConversations();
+  const { data: conversations = [], isLoading } = useListOpenaiConversations({
+    query: { enabled: isAuthenticated },
+  });
   const { mutate: createConv, isPending: isCreating } = useCreateOpenaiConversation();
   const { mutate: deleteConv } = useDeleteOpenaiConversation();
 
   const handleCreate = () => {
+    if (!isAuthenticated) {
+      setLocation("/chat");
+      setIsOpen(false);
+      return;
+    }
     createConv(
       { data: { title: "New Conversation" } },
       {
@@ -53,6 +62,7 @@ export function Sidebar() {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-card border-r border-border">
+      {/* Logo */}
       <div className="p-4 flex flex-col gap-4">
         <Link href="/" onClick={() => setIsOpen(false)}>
           <div className="flex items-center gap-3 cursor-pointer group">
@@ -66,8 +76,8 @@ export function Sidebar() {
           </div>
         </Link>
 
-        <LuxuryButton 
-          className="w-full justify-start gap-2" 
+        <LuxuryButton
+          className="w-full justify-start gap-2"
           onClick={handleCreate}
           isLoading={isCreating}
           variant="secondary"
@@ -77,54 +87,110 @@ export function Sidebar() {
         </LuxuryButton>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 pb-4">
-        <div className="text-[11px] font-semibold text-muted-foreground mb-2 px-2 uppercase tracking-widest">
-          Recent Requests
-        </div>
-        
-        <div className="space-y-0.5">
-          {isLoading ? (
-            <div className="px-2 py-3 text-sm text-muted-foreground animate-pulse">Loading history...</div>
-          ) : conversations.length === 0 ? (
-            <div className="px-2 py-3 text-sm text-muted-foreground text-center border border-dashed border-border rounded-lg">
-              No conversations yet
+      {/* Conversation List or Guest Prompt */}
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
+        {isAuthLoading ? (
+          <div className="px-2 py-3 text-sm text-muted-foreground animate-pulse text-center">Loading…</div>
+        ) : isAuthenticated ? (
+          <>
+            <div className="text-[11px] font-semibold text-muted-foreground mb-2 px-2 uppercase tracking-widest">
+              Recent Requests
             </div>
-          ) : (
-            conversations.map((conv) => {
-              const isActive = location === `/c/${conv.id}`;
-              return (
-                <Link key={conv.id} href={`/c/${conv.id}`} onClick={() => setIsOpen(false)}>
-                  <div className={cn(
-                    "group flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200",
-                    isActive 
-                      ? "bg-primary/10 text-primary" 
-                      : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
-                  )}>
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-                      <div className="flex flex-col truncate">
-                        <span className="text-sm truncate font-medium">
-                          {conv.title}
-                        </span>
-                        <span className="text-[10px] opacity-60 mt-0.5">
-                          {format(new Date(conv.createdAt), "MMM d, h:mm a")}
-                        </span>
+            <div className="space-y-0.5">
+              {isLoading ? (
+                <div className="px-2 py-3 text-sm text-muted-foreground animate-pulse">Loading history…</div>
+              ) : conversations.length === 0 ? (
+                <div className="px-2 py-3 text-sm text-muted-foreground text-center border border-dashed border-border rounded-lg">
+                  No conversations yet
+                </div>
+              ) : (
+                conversations.map((conv) => {
+                  const isActive = location === `/c/${conv.id}`;
+                  return (
+                    <Link key={conv.id} href={`/c/${conv.id}`} onClick={() => setIsOpen(false)}>
+                      <div className={cn(
+                        "group flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+                      )}>
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                          <div className="flex flex-col truncate">
+                            <span className="text-sm truncate font-medium">{conv.title}</span>
+                            <span className="text-[10px] opacity-60 mt-0.5">
+                              {format(new Date(conv.createdAt), "MMM d, h:mm a")}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => handleDelete(e, conv.id)}
+                          className="p-1.5 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 rounded-md transition-all shrink-0"
+                          title="Delete conversation"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    </div>
-                    <button 
-                      onClick={(e) => handleDelete(e, conv.id)}
-                      className="p-1.5 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 rounded-md transition-all shrink-0"
-                      title="Delete conversation"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </Link>
-              );
-            })
-          )}
-        </div>
+                    </Link>
+                  );
+                })
+              )}
+            </div>
+          </>
+        ) : (
+          /* Guest panel */
+          <div className="mx-2 mt-1 rounded-xl border border-border/60 bg-background/40 p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-primary/70 shrink-0" />
+              <p className="text-xs font-semibold text-foreground/80 leading-snug">
+                Save your conversations
+              </p>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Sign in to save your chat history and pick up where you left off on any device.
+            </p>
+            <button
+              onClick={login}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold text-white transition-all duration-200"
+              style={{ background: "linear-gradient(135deg, #52b788 0%, #2d6a4f 100%)" }}
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Sign in / Sign up
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* User footer */}
+      {isAuthenticated && user && (
+        <div className="px-3 pb-4 pt-2 border-t border-border/40">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 overflow-hidden">
+              {user.profileImageUrl ? (
+                <img
+                  src={user.profileImageUrl}
+                  alt={user.firstName || "User"}
+                  className="w-7 h-7 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <User className="w-3.5 h-3.5 text-primary" />
+                </div>
+              )}
+              <span className="text-xs text-foreground/80 truncate font-medium">
+                {user.firstName || user.email || "Guest"}
+              </span>
+            </div>
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 rounded-md transition-all shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -136,7 +202,7 @@ export function Sidebar() {
           <Hotel className="w-5 h-5 text-primary" />
           <h1 className="font-display font-semibold text-lg text-gradient-brand">Seed Hotel</h1>
         </div>
-        <button 
+        <button
           onClick={() => setIsOpen(true)}
           className="p-2 text-muted-foreground hover:text-primary transition-colors"
         >
@@ -153,14 +219,14 @@ export function Sidebar() {
       <AnimatePresence>
         {isOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
               className="md:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
             />
-            <motion.div 
+            <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -168,7 +234,7 @@ export function Sidebar() {
               className="md:hidden fixed inset-y-0 left-0 w-[280px] z-50 shadow-2xl"
             >
               <SidebarContent />
-              <button 
+              <button
                 onClick={() => setIsOpen(false)}
                 className="absolute top-3 right-3 p-1.5 text-muted-foreground hover:text-primary bg-background/50 rounded-md"
               >

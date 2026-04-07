@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import { db, conversations, messages } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { eq, asc, and } from "drizzle-orm";
@@ -82,17 +82,19 @@ Every room features:
 
 Always answer as Aria — enthusiastic, knowledgeable, and proud of SEED Resort's innovation. If a guest asks something very specific you cannot answer, say you will connect them with the relevant team. Never make up prices or availability unless stated above.`;
 
-function getSessionId(req: import("express").Request): string {
-  return (req.headers["x-session-id"] as string) ?? "";
+function getUserId(req: Request): string | null {
+  if (req.isAuthenticated()) return req.user.id;
+  return null;
 }
 
 router.get("/conversations", async (req, res) => {
   try {
-    const sessionId = getSessionId(req);
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
     const convs = await db
       .select()
       .from(conversations)
-      .where(eq(conversations.sessionId, sessionId))
+      .where(eq(conversations.sessionId, userId))
       .orderBy(asc(conversations.createdAt));
     res.json(convs);
   } catch (err) {
@@ -103,11 +105,12 @@ router.get("/conversations", async (req, res) => {
 
 router.post("/conversations", async (req, res) => {
   try {
-    const sessionId = getSessionId(req);
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
     const body = CreateOpenaiConversationBody.parse(req.body);
     const [conv] = await db
       .insert(conversations)
-      .values({ title: body.title, sessionId })
+      .values({ title: body.title, sessionId: userId })
       .returning();
     res.status(201).json(conv);
   } catch (err) {
@@ -118,26 +121,19 @@ router.post("/conversations", async (req, res) => {
 
 router.get("/conversations/:id", async (req, res) => {
   try {
-    const sessionId = getSessionId(req);
-    const { id } = GetOpenaiConversationParams.parse({
-      id: Number(req.params.id),
-    });
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+    const { id } = GetOpenaiConversationParams.parse({ id: Number(req.params.id) });
     const [conv] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)));
-
-    if (!conv) {
-      res.status(404).json({ error: "Conversation not found" });
-      return;
-    }
-
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)));
+    if (!conv) { res.status(404).json({ error: "Conversation not found" }); return; }
     const msgs = await db
       .select()
       .from(messages)
       .where(eq(messages.conversationId, id))
       .orderBy(asc(messages.createdAt));
-
     res.json({ ...conv, messages: msgs });
   } catch (err) {
     req.log.error({ err }, "Failed to get conversation");
@@ -147,18 +143,14 @@ router.get("/conversations/:id", async (req, res) => {
 
 router.delete("/conversations/:id", async (req, res) => {
   try {
-    const sessionId = getSessionId(req);
-    const { id } = DeleteOpenaiConversationParams.parse({
-      id: Number(req.params.id),
-    });
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+    const { id } = DeleteOpenaiConversationParams.parse({ id: Number(req.params.id) });
     const [deleted] = await db
       .delete(conversations)
-      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)))
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)))
       .returning();
-    if (!deleted) {
-      res.status(404).json({ error: "Conversation not found" });
-      return;
-    }
+    if (!deleted) { res.status(404).json({ error: "Conversation not found" }); return; }
     res.status(204).send();
   } catch (err) {
     req.log.error({ err }, "Failed to delete conversation");
@@ -168,19 +160,14 @@ router.delete("/conversations/:id", async (req, res) => {
 
 router.get("/conversations/:id/messages", async (req, res) => {
   try {
-    const sessionId = getSessionId(req);
-    const { id } = ListOpenaiMessagesParams.parse({
-      id: Number(req.params.id),
-    });
-    // Verify ownership
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+    const { id } = ListOpenaiMessagesParams.parse({ id: Number(req.params.id) });
     const [conv] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)));
-    if (!conv) {
-      res.status(404).json({ error: "Conversation not found" });
-      return;
-    }
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)));
+    if (!conv) { res.status(404).json({ error: "Conversation not found" }); return; }
     const msgs = await db
       .select()
       .from(messages)
@@ -195,21 +182,16 @@ router.get("/conversations/:id/messages", async (req, res) => {
 
 router.post("/conversations/:id/messages", async (req, res) => {
   try {
-    const sessionId = getSessionId(req);
-    const { id } = SendOpenaiMessageParams.parse({
-      id: Number(req.params.id),
-    });
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+    const { id } = SendOpenaiMessageParams.parse({ id: Number(req.params.id) });
     const body = SendOpenaiMessageBody.parse(req.body);
 
     const [conv] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, id), eq(conversations.sessionId, sessionId)));
-
-    if (!conv) {
-      res.status(404).json({ error: "Conversation not found" });
-      return;
-    }
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)));
+    if (!conv) { res.status(404).json({ error: "Conversation not found" }); return; }
 
     const priorMessages = await db
       .select()
@@ -217,17 +199,12 @@ router.post("/conversations/:id/messages", async (req, res) => {
       .where(eq(messages.conversationId, id))
       .orderBy(asc(messages.createdAt));
 
-    await db.insert(messages).values({
-      conversationId: id,
-      role: "user",
-      content: body.content,
-    });
+    await db.insert(messages).values({ conversationId: id, role: "user", content: body.content });
 
     const chatHistory = priorMessages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
-
     chatHistory.push({ role: "user", content: body.content });
 
     res.setHeader("Content-Type", "text/event-stream");
@@ -240,10 +217,7 @@ router.post("/conversations/:id/messages", async (req, res) => {
     const stream = await openai.chat.completions.create({
       model: "gpt-5.2",
       max_completion_tokens: 8192,
-      messages: [
-        { role: "system", content: HOTEL_SYSTEM_PROMPT },
-        ...chatHistory,
-      ],
+      messages: [{ role: "system", content: HOTEL_SYSTEM_PROMPT }, ...chatHistory],
       stream: true,
     });
 
@@ -255,11 +229,7 @@ router.post("/conversations/:id/messages", async (req, res) => {
       }
     }
 
-    await db.insert(messages).values({
-      conversationId: id,
-      role: "assistant",
-      content: fullResponse,
-    });
+    await db.insert(messages).values({ conversationId: id, role: "assistant", content: fullResponse });
 
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();

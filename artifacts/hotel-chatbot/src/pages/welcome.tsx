@@ -3,6 +3,7 @@ import { Sparkles, ArrowRight, MapPin, Coffee, Car, Clock, ExternalLink } from "
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateOpenaiConversation, getListOpenaiConversationsQueryKey } from "@workspace/api-client-react";
+import { useAuthContext } from "@/contexts/auth-context";
 
 const suggestions = [
   { label: "Recommend local restaurants", icon: MapPin },
@@ -31,21 +32,29 @@ const itemVariants = {
 export default function WelcomePage() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuthContext();
   const { mutate: createConv, isPending } = useCreateOpenaiConversation();
 
   const handleStart = (suggestion?: string) => {
-    createConv(
-      { data: { title: suggestion || "New Request" } },
-      {
-        onSuccess: (newConv) => {
-          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-          const path = suggestion
-            ? `/c/${newConv.id}?init=${encodeURIComponent(suggestion)}`
-            : `/c/${newConv.id}`;
-          setLocation(path);
-        },
-      }
-    );
+    if (isAuthenticated) {
+      createConv(
+        { data: { title: suggestion || "New Request" } },
+        {
+          onSuccess: (newConv) => {
+            queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+            const path = suggestion
+              ? `/c/${newConv.id}?init=${encodeURIComponent(suggestion)}`
+              : `/c/${newConv.id}`;
+            setLocation(path);
+          },
+        }
+      );
+    } else {
+      const path = suggestion
+        ? `/chat?init=${encodeURIComponent(suggestion)}`
+        : "/chat";
+      setLocation(path);
+    }
   };
 
   return (
@@ -65,12 +74,12 @@ export default function WelcomePage() {
         />
       </motion.div>
 
-      {/* Layered overlays — strong on left (content side), lighter on right to show resort */}
+      {/* Layered overlays */}
       <div className="absolute inset-0 z-[1] bg-black/45" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
 
-      {/* Subtle animated vignette pulse */}
+      {/* Vignette pulse */}
       <motion.div
         className="absolute inset-0 z-[3] rounded-none pointer-events-none"
         style={{
@@ -80,7 +89,7 @@ export default function WelcomePage() {
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Animated shimmer line at bottom */}
+      {/* Shimmer line */}
       <motion.div
         className="absolute bottom-0 left-0 right-0 h-px z-[4]"
         style={{ background: "linear-gradient(90deg, transparent 0%, rgba(82,183,136,0.6) 50%, transparent 100%)" }}
