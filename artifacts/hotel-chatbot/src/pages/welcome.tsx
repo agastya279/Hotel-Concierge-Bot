@@ -173,7 +173,7 @@ export default function WelcomePage() {
 
           {/* Secondary — Reserve Your Stay */}
           <motion.a
-            href="https://legendary-manatee-c69f26.netlify.app/g"
+            href="https://legendary-manatee-c69f26.netlify.app/"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03, y: -2 }}
