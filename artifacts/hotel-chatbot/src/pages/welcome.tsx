@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Sparkles, ArrowRight, MapPin, Coffee, Car, Clock } from "lucide-react";
+import { Sparkles, ArrowRight, MapPin, Coffee, Car, Clock, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateOpenaiConversation, getListOpenaiConversationsQueryKey } from "@workspace/api-client-react";
@@ -137,8 +137,9 @@ export default function WelcomePage() {
           Where luxury meets innovation in the heart of paradise. Ask Aria anything about your stay.
         </motion.p>
 
-        {/* CTA Button */}
-        <motion.div variants={itemVariants} className="mb-12">
+        {/* CTA Buttons */}
+        <motion.div variants={itemVariants} className="mb-12 flex flex-wrap items-center gap-3">
+          {/* Primary — Start a Conversation */}
           <motion.button
             onClick={() => handleStart()}
             disabled={isPending}
@@ -169,6 +170,54 @@ export default function WelcomePage() {
               <ArrowRight className="w-4 h-4" />
             </motion.span>
           </motion.button>
+
+          {/* Secondary — Reserve Your Stay */}
+          <motion.a
+            href="https://legendary-manatee-c69f26.netlify.app/g"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white overflow-hidden cursor-pointer select-none"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.18)",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 0 0 0 rgba(255,255,255,0)",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.background = "rgba(255,255,255,0.12)";
+              el.style.borderColor = "rgba(167,243,208,0.45)";
+              el.style.boxShadow = "0 8px 30px rgba(82,183,136,0.2), inset 0 1px 0 rgba(255,255,255,0.1)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.background = "rgba(255,255,255,0.06)";
+              el.style.borderColor = "rgba(255,255,255,0.18)";
+              el.style.boxShadow = "0 0 0 0 rgba(255,255,255,0)";
+            }}
+          >
+            {/* Animated shimmer sweep */}
+            <motion.span
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: "linear-gradient(105deg, transparent 35%, rgba(167,243,208,0.12) 50%, transparent 65%)",
+                backgroundSize: "200% 100%",
+              }}
+              animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+            />
+            <ExternalLink className="w-4 h-4 relative z-10 text-emerald-300/80" />
+            <span className="relative z-10 tracking-wide text-white/90">Reserve Your Stay</span>
+            <motion.span
+              className="relative z-10"
+              animate={{ x: [0, 3, 0] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+            >
+              <ArrowRight className="w-4 h-4 text-emerald-300/70" />
+            </motion.span>
+          </motion.a>
         </motion.div>
 
         {/* Quick suggestion chips */}
