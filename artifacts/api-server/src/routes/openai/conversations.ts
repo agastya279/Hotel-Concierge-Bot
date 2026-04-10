@@ -244,4 +244,45 @@ router.post("/conversations/:id/messages", async (req, res) => {
   }
 });
 
+router.post("/conversations/:id/generate-title", async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+    const id = Number(req.params.id);
+    const firstMessage = typeof req.body?.firstMessage === "string" ? req.body.firstMessage : "";
+    if (!firstMessage.trim()) { res.status(400).json({ error: "firstMessage required" }); return; }
+
+    const [conv] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)));
+    if (!conv) { res.status(404).json({ error: "Conversation not found" }); return; }
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 20,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You create ultra-short titles (3–6 words) for hotel concierge chat sessions. Output only the title — no quotes, no punctuation at end.",
+        },
+        { role: "user", content: firstMessage },
+      ],
+    });
+
+    const title = completion.choices[0]?.message?.content?.trim() || conv.title;
+    await db
+      .update(conversations)
+      .set({ title })
+      .where(eq(conversations.id, id));
+
+    res.json({ title });
+  } catch (err) {
+    req.log.error({ err }, "Failed to generate title");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;

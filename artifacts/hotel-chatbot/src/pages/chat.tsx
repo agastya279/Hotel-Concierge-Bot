@@ -2,7 +2,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useSearch } from "wouter";
 import { Send, Sparkles, Hotel, ArrowDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGetOpenaiConversation, useListOpenaiMessages } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useGetOpenaiConversation,
+  useListOpenaiMessages,
+  getListOpenaiConversationsQueryKey,
+} from "@workspace/api-client-react";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { ChatBubble } from "@/components/chat/chat-bubble";
 import { LuxuryButton } from "@/components/ui/luxury-button";
@@ -10,6 +15,7 @@ import { LuxuryButton } from "@/components/ui/luxury-button";
 export default function ChatPage() {
   const { id } = useParams();
   const search = useSearch();
+  const queryClient = useQueryClient();
   const conversationId = id ? parseInt(id, 10) : undefined;
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -17,6 +23,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const autoSentRef = useRef(false);
+  const titleGeneratedRef = useRef(false);
 
   const { data: conversation, isLoading: isConvLoading } = useGetOpenaiConversation(
     conversationId as number,
@@ -31,6 +38,30 @@ export default function ChatPage() {
   const { sendMessage, isStreaming, streamedContent, optimisticUserMessage } =
     useChatStream(conversationId);
 
+  // Auto-generate title after first exchange completes
+  useEffect(() => {
+    if (titleGeneratedRef.current) return;
+    if (!conversationId || isStreaming) return;
+    if (messages.length >= 2) {
+      titleGeneratedRef.current = true;
+      const firstUserMsg = messages.find((m) => m.role === "user");
+      if (!firstUserMsg) return;
+      fetch(`/api/openai/conversations/${conversationId}/generate-title`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ firstMessage: firstUserMsg.content }),
+      })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data?.title) {
+            queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [conversationId, isStreaming, messages, queryClient]);
+
   // Auto-send initial message from suggestion chip (?init=...)
   useEffect(() => {
     if (autoSentRef.current || !conversationId || isConvLoading || isMessagesLoading) return;
@@ -42,7 +73,6 @@ export default function ChatPage() {
     }
   }, [conversationId, isConvLoading, isMessagesLoading, messages.length, search, sendMessage]);
 
-  // Detect scroll position to show/hide the scroll-to-bottom button
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
@@ -54,14 +84,11 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior });
   }, []);
 
-  // Auto-scroll when new content arrives only if already near bottom
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    if (distanceFromBottom < 200) {
-      scrollToBottom("smooth");
-    }
+    if (distanceFromBottom < 200) scrollToBottom("smooth");
   }, [messages, streamedContent, optimisticUserMessage, scrollToBottom]);
 
   const handleSend = () => {
@@ -69,7 +96,6 @@ export default function ChatPage() {
     if (!text || isStreaming) return;
     setInput("");
     sendMessage(text);
-    // scroll instantly when user sends
     setTimeout(() => scrollToBottom("smooth"), 50);
   };
 
@@ -95,15 +121,35 @@ export default function ChatPage() {
   }
 
   const allMessages = messages;
-  const totalVisible = allMessages.length + (optimisticUserMessage ? 1 : 0) + (isStreaming || streamedContent ? 1 : 0);
+  const charCount = input.length;
+  const showCharCount = charCount > 150;
 
   return (
     <div className="flex flex-col h-full w-full relative bg-background">
       {/* Header */}
-      <div className="shrink-0 h-14 border-b border-border/40 bg-background/80 backdrop-blur-md flex items-center px-6 z-10">
+      <div className="shrink-0 h-14 border-b border-border/40 bg-background/80 backdrop-blur-md flex items-center justify-between px-6 z-10">
         <h2 className="font-semibold text-base text-foreground truncate">
           {conversation?.title || "Conversation"}
         </h2>
+        {/* Thinking indicator */}
+        <AnimatePresence>
+          {isStreaming && (
+            <motion.div
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.25 }}
+              className="flex items-center gap-2 text-xs text-primary/70 font-medium"
+            >
+              <motion.div
+                className="w-1.5 h-1.5 rounded-full bg-primary"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              Aria is thinking…
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Messages Area */}
@@ -132,6 +178,7 @@ export default function ChatPage() {
             role={msg.role as "user" | "assistant"}
             content={msg.content}
             index={i}
+            timestamp={new Date(msg.createdAt)}
           />
         ))}
 
@@ -140,6 +187,7 @@ export default function ChatPage() {
             role="user"
             content={optimisticUserMessage}
             index={allMessages.length}
+            timestamp={new Date()}
           />
         )}
 
@@ -191,6 +239,19 @@ export default function ChatPage() {
                 t.style.height = `${Math.min(t.scrollHeight, 192)}px`;
               }}
             />
+            {/* Character counter */}
+            <AnimatePresence>
+              {showCharCount && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="absolute bottom-3 left-4 text-[10px] text-muted-foreground/40 tabular-nums pointer-events-none"
+                >
+                  {charCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
             <button
               onClick={handleSend}
               disabled={!input.trim() || isStreaming}

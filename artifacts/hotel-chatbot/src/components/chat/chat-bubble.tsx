@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { Hotel, User } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Hotel, User, Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 
@@ -8,10 +9,30 @@ interface ChatBubbleProps {
   content: string;
   isStreaming?: boolean;
   index?: number;
+  timestamp?: Date;
 }
 
-export function ChatBubble({ role, content, isStreaming, index = 0 }: ChatBubbleProps) {
+function formatTime(date: Date): string {
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diff < 10) return "just now";
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }: ChatBubbleProps) {
   const isUser = role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!content) return;
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
 
   return (
     <motion.div
@@ -23,7 +44,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0 }: ChatBubble
         ease: [0.22, 1, 0.36, 1],
       }}
       className={cn(
-        "flex w-full gap-3 py-5 px-4 md:px-8 max-w-4xl mx-auto",
+        "group flex w-full gap-3 py-5 px-4 md:px-8 max-w-4xl mx-auto",
         !isUser && "bg-white/[0.02] border-l-2 border-primary/40 rounded-r-2xl my-1"
       )}
     >
@@ -43,10 +64,55 @@ export function ChatBubble({ role, content, isStreaming, index = 0 }: ChatBubble
 
       {/* Content */}
       <div className="flex-1 min-w-0 space-y-1.5">
-        <span className="block text-[12px] font-semibold tracking-widest uppercase text-muted-foreground/70">
-          {isUser ? "You" : "Aria · Seed Concierge"}
-        </span>
+        {/* Label row */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="block text-[12px] font-semibold tracking-widest uppercase text-muted-foreground/70">
+            {isUser ? "You" : "Aria · Seed Concierge"}
+          </span>
+          <div className="flex items-center gap-2">
+            {timestamp && (
+              <span className="text-[10px] text-muted-foreground/40 tabular-nums">
+                {formatTime(timestamp)}
+              </span>
+            )}
+            {/* Copy button — only on completed AI messages */}
+            {!isUser && content && !isStreaming && (
+              <motion.button
+                onClick={handleCopy}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title="Copy response"
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-md hover:bg-white/10 text-muted-foreground/50 hover:text-foreground"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {copied ? (
+                    <motion.span
+                      key="check"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="copy"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            )}
+          </div>
+        </div>
 
+        {/* Message body */}
         <div className="text-[15px] leading-relaxed text-foreground/90">
           {content ? (
             isUser ? (
