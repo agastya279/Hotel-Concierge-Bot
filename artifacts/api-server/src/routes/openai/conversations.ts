@@ -244,6 +244,30 @@ router.post("/conversations/:id/messages", async (req, res) => {
   }
 });
 
+router.patch("/conversations/:id", async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+    const id = Number(req.params.id);
+    const title = typeof req.body?.title === "string" ? req.body.title.trim() : "";
+    if (!title) { res.status(400).json({ error: "title required" }); return; }
+
+    const [conv] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)));
+    if (!conv) { res.status(404).json({ error: "Conversation not found" }); return; }
+
+    await db.update(conversations).set({ title }).where(eq(conversations.id, id));
+
+    res.json({ id, title });
+  } catch (err) {
+    req.log.error({ err }, "Failed to rename conversation");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/conversations/:id/generate-title", async (req, res) => {
   try {
     const userId = getUserId(req);

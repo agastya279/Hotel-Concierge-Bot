@@ -1,22 +1,10 @@
-# Workspace
+# SEED Resort Hotel Concierge — Workspace
 
-## GitHub Push (Pending)
+## Project Overview
 
-GitHub OAuth was dismissed during setup. To push to GitHub, run these commands in the Shell:
+Full-stack AI hotel concierge chatbot for **SEED Resort**. The AI (named **Aria**) handles guest requests, recommendations, and resort information. Supports both authenticated users (saved conversation history) and guests (ephemeral, in-memory chat).
 
-```bash
-# 1. Create a repo on github.com first, then:
-git remote add github https://<your-token>@github.com/<username>/<repo>.git
-git push github master
-```
-
-Or provide a GitHub Personal Access Token (PAT with `repo` scope) so it can be stored as a secret and the push can be automated.
-
-
-
-## Overview
-
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+---
 
 ## Stack
 
@@ -24,91 +12,153 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
+- **API framework**: Express 5 (with session-based auth middleware)
 - **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- **Validation**: plain Zod (`zod` NOT `zod/v4` — v4 path does not resolve in api-server)
+- **API codegen**: Orval (OpenAPI spec → React Query hooks + Zod schemas)
+- **Build**: esbuild (bundles to `dist/index.mjs`)
+- **Frontend**: React + Vite + Tailwind CSS + Framer Motion
+- **AI**: OpenAI (via `AI_INTEGRATIONS_OPENAI_BASE_URL` + `AI_INTEGRATIONS_OPENAI_API_KEY`), model `gpt-5.2`, `max_completion_tokens: 8192`, NO temperature param
+
+---
 
 ## Structure
 
 ```text
-artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
-├── lib/                    # Shared libraries
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+workspace/
+├── artifacts/
+│   ├── api-server/           # Express 5 backend (port 8080)
+│   │   └── src/routes/openai/
+│   │       ├── conversations.ts  # Auth'd conversation CRUD + streaming + PATCH rename
+│   │       └── guest-chat.ts     # Guest streaming (no DB writes)
+│   └── hotel-chatbot/        # React/Vite frontend
+│       └── src/
+│           ├── App.tsx           # QueryClient, AuthProvider, WouterRouter, KeyboardShortcuts
+│           ├── pages/
+│           │   ├── welcome.tsx   # Landing page with Ken Burns BG, quick chips
+│           │   ├── chat.tsx      # Authenticated chat (with DB, title editing)
+│           │   └── guest-chat.tsx # Guest chat (in-memory, no DB)
+│           ├── components/
+│           │   ├── layout/sidebar.tsx    # Date-grouped convos, search, ⌘K badge
+│           │   └── chat/chat-bubble.tsx  # Markdown, copy button, timestamps, "A" avatar
+│           ├── hooks/
+│           │   ├── use-chat-stream.ts    # Auth'd streaming + AbortController
+│           │   └── use-guest-stream.ts   # Guest streaming + AbortController
+│           └── contexts/auth-context.tsx # isAuthenticated, user, login, logout
+├── lib/
+│   ├── api-spec/             # OpenAPI spec + Orval codegen config
+│   ├── api-client-react/     # Generated React Query hooks
+│   ├── api-zod/              # Generated Zod schemas
+│   └── db/                   # Drizzle ORM schema + DB connection
+└── scripts/                  # Utility scripts
 ```
+
+---
+
+## Key Design Decisions
+
+### Auth
+- Cookie-based session via `authMiddleware` (sets `req.user` if session cookie present — optional)
+- `req.user.id` used as DB scope for conversations
+- Guests use `/api/openai/guest-chat` (streams, no DB writes)
+- No auth gate — guests can chat forever; sign-in saves history
+
+### Drizzle ORM
+- **NO relational query API** — use only `db.select().from(...)` plain selects
+- Use `and()` for compound WHERE clauses
+- Use `and(eq(conversations.id, id), eq(conversations.sessionId, userId))` for ownership checks
+
+### SSE Streaming
+- Format: `data: {content}` chunks → `data: {done: true}`
+- Frontend uses `fetch` + `ReadableStream`, NOT `EventSource`
+- Both hooks expose `stopStreaming()` via `AbortController`
+
+### API Client
+- Generated hooks from OpenAPI spec via Orval
+- For endpoints not in spec (e.g. PATCH rename, generate-title), use raw `fetch` with `credentials: "include"`
+- `getGetOpenaiConversationQueryKey(id)` — invalidate to refresh header title
+
+---
+
+## Chatbot Features
+
+### Welcome Page (`/`)
+- Ken Burns background animation (`/images/seed-resort-bg.png`, `objectPosition: "65% 50%"`)
+- Glassmorphism overlays + vignette pulse
+- "Start a Conversation" CTA → creates conv (auth) or routes to `/chat` (guest)
+- "Reserve Your Stay" link → `https://legendary-manatee-c69f26.netlify.app/`
+- Feature strip badges (privacy, guest access, sign-in perk)
+- Quick request chips (4 suggestions) → auto-send when clicked
+
+### Authenticated Chat (`/c/:id`)
+- Full conversation history from DB
+- Auto-title generation after first exchange (`POST /conversations/:id/generate-title`)
+- Inline title editing (click pencil → save with Enter/✓ or cancel with Esc/✗)
+- Stop generation button (square icon, appears during streaming)
+- Character counter (appears > 150 chars, turns red > 1800)
+- "Aria is thinking…" animated indicator in header
+- `PATCH /conversations/:id` endpoint for renaming
+
+### Guest Chat (`/chat`)
+- In-memory messages only, no DB writes
+- Streaming via `/api/openai/guest-chat`
+- Timestamps on messages, copy button on AI responses
+- "Sign in to save" nudge in header
+- Same stop button + character counter as auth'd chat
+- Auto-send from `?init=` query param
+
+### Sidebar
+- Date-grouped conversations: Today / Yesterday / This Week / Older
+- Search bar (appears when > 2 conversations)
+- Delete button on hover per conversation
+- ⌘K badge on "Start New Request" button
+- Guest panel with sign-in prompt when not authenticated
+- User profile + logout footer when authenticated
+
+### Chat Bubble (`ChatBubble` component)
+- "A" green-gradient avatar for Aria (not a building icon)
+- User avatar (User icon in muted bg)
+- Relative timestamps (just now / Xs ago / Xm ago)
+- Copy button on hover for AI messages (toast confirmation)
+- Animated typing dots for streaming state
+- `react-markdown` rendering for AI messages with prose styling
+
+### Keyboard Shortcut
+- `Cmd+K` (Mac) / `Ctrl+K` (Windows): new conversation (or route to `/chat` for guests)
+
+---
+
+## Design Tokens
+
+- **Primary green**: `#52b788` (sage green)
+- **Dark green**: `#2d6a4f`
+- **Background**: dark charcoal (`bg-background`)
+- **Headings font**: `Georgia, Times New Roman, serif`
+- **Aria gradient**: `linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)`
+- **Brand gradient**: `linear-gradient(135deg, #a7f3d0 0%, #52b788 45%, #95d5b2 100%)`
+
+---
+
+## GitHub Push (Pending)
+
+GitHub OAuth was dismissed during setup. To push to GitHub:
+
+```bash
+git remote add github https://<your-token>@github.com/<username>/<repo>.git
+git push github master
+```
+
+---
 
 ## TypeScript & Composite Projects
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
+Every package extends `tsconfig.base.json` (`composite: true`). Root `tsconfig.json` lists all packages as project references.
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+- **Always typecheck from the root**: `pnpm run typecheck`
+- **`emitDeclarationOnly`** — JS bundling is handled by esbuild/vite
+- Run codegen: `pnpm --filter @workspace/api-spec run codegen`
 
 ## Root Scripts
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
-
-## Packages
-
-### `artifacts/api-server` (`@workspace/api-server`)
-
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
-
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
-
-### `lib/db` (`@workspace/db`)
-
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
-
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
-
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
-
-### `lib/api-spec` (`@workspace/api-spec`)
-
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
-
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
-
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
-
-### `lib/api-client-react` (`@workspace/api-client-react`)
-
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
-
-### `lib/replit-auth-web` (`@workspace/replit-auth-web`)
-
-Browser auth package. Exports `useAuth()` hook for auth state, login, and logout. Uses OIDC via the API server. **Do not use generated API client for auth — always use this package.**
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+- `pnpm run build` — typecheck then recursive build
+- `pnpm run typecheck` — `tsc --build --emitDeclarationOnly`

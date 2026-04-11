@@ -64,7 +64,7 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="flex-1 w-full h-full relative flex items-center overflow-hidden">
+    <div className="flex-1 w-full h-full relative flex items-center overflow-y-auto">
       <motion.div
         className="absolute inset-0 z-0"
         initial={{ scale: 1.04 }}
@@ -103,7 +103,7 @@ export default function WelcomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative z-[5] w-full max-w-2xl px-8 md:px-12 flex flex-col items-start"
+        className="relative z-[5] w-full max-w-2xl px-8 md:px-12 flex flex-col items-start py-10"
       >
         <motion.div variants={itemVariants} className="mb-7">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/8 backdrop-blur-md text-white/70 text-[11px] font-semibold tracking-[0.15em] uppercase">

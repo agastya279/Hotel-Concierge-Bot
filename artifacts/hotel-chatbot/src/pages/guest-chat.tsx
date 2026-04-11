@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearch } from "wouter";
-import { Send, Sparkles, Hotel, ArrowDown, LogIn } from "lucide-react";
+import { Send, Hotel, ArrowDown, LogIn, Square } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGuestStream } from "@/hooks/use-guest-stream";
 import { ChatBubble } from "@/components/chat/chat-bubble";
@@ -10,6 +10,7 @@ interface GuestMessage {
   id: number;
   role: "user" | "assistant";
   content: string;
+  timestamp: Date;
 }
 
 export default function GuestChatPage() {
@@ -22,10 +23,11 @@ export default function GuestChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const autoSentRef = useRef(false);
   const idCounter = useRef(0);
 
-  const { sendMessage, isStreaming, streamedContent } = useGuestStream();
+  const { sendMessage, stopStreaming, isStreaming, streamedContent } = useGuestStream();
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     bottomRef.current?.scrollIntoView({ behavior });
@@ -45,18 +47,35 @@ export default function GuestChatPage() {
     if (distanceFromBottom < 200) scrollToBottom("smooth");
   }, [messages, streamedContent, scrollToBottom]);
 
+  const resizeTextarea = () => {
+    const t = textareaRef.current;
+    if (!t) return;
+    t.style.height = "auto";
+    t.style.height = `${Math.min(t.scrollHeight, 192)}px`;
+  };
+
   const doSend = useCallback(async (text: string) => {
     if (!text.trim() || isStreaming) return;
 
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
-    const userMsg: GuestMessage = { id: ++idCounter.current, role: "user", content: text };
+    const userMsg: GuestMessage = {
+      id: ++idCounter.current,
+      role: "user",
+      content: text,
+      timestamp: new Date(),
+    };
     setMessages((prev) => [...prev, userMsg]);
 
     setTimeout(() => scrollToBottom("smooth"), 50);
 
     const response = await sendMessage(text, history);
     if (response) {
-      const assistantMsg: GuestMessage = { id: ++idCounter.current, role: "assistant", content: response };
+      const assistantMsg: GuestMessage = {
+        id: ++idCounter.current,
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+      };
       setMessages((prev) => [...prev, assistantMsg]);
     }
   }, [isStreaming, messages, sendMessage, scrollToBottom]);
@@ -77,6 +96,7 @@ export default function GuestChatPage() {
     const text = input.trim();
     if (!text || isStreaming) return;
     setInput("");
+    setTimeout(resizeTextarea, 0);
     doSend(text);
   };
 
@@ -87,6 +107,8 @@ export default function GuestChatPage() {
     }
   };
 
+  const charCount = input.length;
+  const showCharCount = charCount > 150;
   const showStreamingBubble = isStreaming || !!streamedContent;
 
   return (
@@ -96,14 +118,33 @@ export default function GuestChatPage() {
         <h2 className="font-semibold text-base text-foreground truncate">
           Conversation with Aria
         </h2>
-        {/* Sign-in nudge */}
-        <button
-          onClick={login}
-          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
-        >
-          <LogIn className="w-3.5 h-3.5" />
-          Sign in to save
-        </button>
+        <div className="flex items-center gap-3">
+          <AnimatePresence>
+            {isStreaming && (
+              <motion.div
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.25 }}
+                className="flex items-center gap-2 text-xs text-primary/70 font-medium"
+              >
+                <motion.div
+                  className="w-1.5 h-1.5 rounded-full bg-primary"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+                Aria is thinking…
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button
+            onClick={login}
+            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Sign in to save
+          </button>
+        </div>
       </div>
 
       {/* Messages Area */}
@@ -139,6 +180,7 @@ export default function GuestChatPage() {
             role={msg.role}
             content={msg.content}
             index={i}
+            timestamp={msg.timestamp}
           />
         ))}
 
@@ -177,35 +219,53 @@ export default function GuestChatPage() {
         <div className="max-w-4xl mx-auto">
           <div className="relative glass-panel rounded-2xl p-1.5 flex items-end shadow-lg border border-border focus-within:border-primary/30 transition-colors duration-200">
             <textarea
+              ref={textareaRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                resizeTextarea();
+              }}
               onKeyDown={handleKeyDown}
               placeholder="Message Aria…"
               className="w-full max-h-48 min-h-[44px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 px-4 py-3 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed"
               rows={1}
               disabled={isStreaming}
-              onInput={(e) => {
-                const t = e.target as HTMLTextAreaElement;
-                t.style.height = "auto";
-                t.style.height = `${Math.min(t.scrollHeight, 192)}px`;
-              }}
             />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isStreaming}
-              className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              {isStreaming ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            {/* Character counter */}
+            <AnimatePresence>
+              {showCharCount && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className={`absolute bottom-3.5 right-14 text-[10px] tabular-nums pointer-events-none transition-colors ${charCount > 1800 ? "text-red-400/70" : "text-muted-foreground/40"}`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-white" />
-                </motion.div>
-              ) : (
-                <Send className="w-3.5 h-3.5 text-white" />
+                  {charCount}
+                </motion.span>
               )}
-            </button>
+            </AnimatePresence>
+            {/* Send / Stop button */}
+            {isStreaming ? (
+              <motion.button
+                key="stop"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                onClick={stopStreaming}
+                title="Stop generating"
+                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-muted hover:bg-destructive/20 border border-border hover:border-destructive/40 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <Square className="w-3.5 h-3.5 text-muted-foreground fill-muted-foreground" />
+              </motion.button>
+            ) : (
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <Send className="w-3.5 h-3.5 text-white" />
+              </button>
+            )}
           </div>
           <p className="text-center mt-2.5 text-[10px] text-muted-foreground/40 tracking-widest uppercase">
             Seed Hotel Concierge · Powered by AI

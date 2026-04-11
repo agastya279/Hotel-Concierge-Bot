@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export interface HistoryMessage {
   role: "user" | "assistant";
@@ -8,11 +8,19 @@ export interface HistoryMessage {
 export function useGuestStream() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamedContent, setStreamedContent] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const stopStreaming = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
 
   const sendMessage = useCallback(async (
     content: string,
     history: HistoryMessage[],
   ): Promise<string> => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsStreaming(true);
     setStreamedContent("");
 
@@ -23,6 +31,7 @@ export function useGuestStream() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, history }),
+        signal: controller.signal,
       });
 
       if (!response.ok) throw new Error("Failed to send message");
@@ -54,8 +63,12 @@ export function useGuestStream() {
           }
         }
       }
-    } catch (error) {
-      console.error("Guest streaming error:", error);
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === "AbortError") {
+        // User stopped — return whatever we have so far
+      } else {
+        console.error("Guest streaming error:", error);
+      }
     } finally {
       setTimeout(() => {
         setIsStreaming(false);
@@ -66,5 +79,5 @@ export function useGuestStream() {
     return fullResponse;
   }, []);
 
-  return { sendMessage, isStreaming, streamedContent };
+  return { sendMessage, stopStreaming, isStreaming, streamedContent };
 }
