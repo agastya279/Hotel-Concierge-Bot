@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Hotel, User, Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatBubbleProps {
   role: "user" | "assistant";
@@ -24,14 +25,18 @@ function formatTime(date: Date): string {
 export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }: ChatBubbleProps) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   const handleCopy = async () => {
     if (!content) return;
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
+      toast({ title: "Copied", description: "Response copied to clipboard" });
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    } catch {
+      toast({ title: "Copy failed", description: "Please try again" });
+    }
   };
 
   return (
@@ -48,12 +53,9 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
         !isUser && "bg-white/[0.02] border-l-2 border-primary/40 rounded-r-2xl my-1"
       )}
     >
-      {/* Avatar */}
       <div className={cn(
         "w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-sm mt-0.5 border",
-        isUser
-          ? "bg-accent border-border"
-          : "bg-primary/10 border-primary/20"
+        isUser ? "bg-accent border-border" : "bg-primary/10 border-primary/20"
       )}>
         {isUser ? (
           <User className="w-3.5 h-3.5 text-muted-foreground" />
@@ -62,9 +64,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
         )}
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-w-0 space-y-1.5">
-        {/* Label row */}
         <div className="flex items-center justify-between gap-2">
           <span className="block text-[12px] font-semibold tracking-widest uppercase text-muted-foreground/70">
             {isUser ? "You" : "Aria · Seed Concierge"}
@@ -75,7 +75,6 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
                 {formatTime(timestamp)}
               </span>
             )}
-            {/* Copy button — only on completed AI messages */}
             {!isUser && content && !isStreaming && (
               <motion.button
                 onClick={handleCopy}
@@ -112,41 +111,20 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
           </div>
         </div>
 
-        {/* Message body */}
         <div className="text-[15px] leading-relaxed text-foreground/90">
           {content ? (
             isUser ? (
               <p className="whitespace-pre-wrap">{content}</p>
             ) : (
-              <div className="prose prose-invert prose-sm max-w-none
-                prose-p:my-1 prose-p:leading-relaxed
-                prose-ul:my-2 prose-ul:pl-4
-                prose-ol:my-2 prose-ol:pl-4
-                prose-li:my-0.5
-                prose-strong:text-foreground prose-strong:font-semibold
-                prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1
-                [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-ul:my-2 prose-ul:pl-4 prose-ol:my-2 prose-ol:pl-4 prose-li:my-0.5 prose-strong:text-foreground prose-strong:font-semibold prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                 <ReactMarkdown>{content}</ReactMarkdown>
               </div>
             )
           ) : isStreaming ? (
             <div className="flex gap-1 items-center h-5 mt-1">
-              <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-primary/70"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 0.7, repeat: Infinity, delay: 0, ease: "easeInOut" }}
-              />
-              <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-primary/70"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 0.7, repeat: Infinity, delay: 0.15, ease: "easeInOut" }}
-              />
-              <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-primary/70"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 0.7, repeat: Infinity, delay: 0.3, ease: "easeInOut" }}
-              />
+              <motion.span className="w-1.5 h-1.5 rounded-full bg-primary/70" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: 0, ease: "easeInOut" }} />
+              <motion.span className="w-1.5 h-1.5 rounded-full bg-primary/70" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: 0.15, ease: "easeInOut" }} />
+              <motion.span className="w-1.5 h-1.5 rounded-full bg-primary/70" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.7, repeat: Infinity, delay: 0.3, ease: "easeInOut" }} />
             </div>
           ) : null}
         </div>

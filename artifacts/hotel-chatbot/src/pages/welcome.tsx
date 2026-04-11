@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Sparkles, ArrowRight, MapPin, Coffee, Car, Clock, ExternalLink } from "lucide-react";
+import { Sparkles, ArrowRight, MapPin, Coffee, Car, Clock, ExternalLink, ShieldCheck, MessageSquareText, Wand2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateOpenaiConversation, getListOpenaiConversationsQueryKey } from "@workspace/api-client-react";
@@ -10,6 +10,12 @@ const suggestions = [
   { label: "Book a wellness session", icon: Coffee },
   { label: "Arrange airport transfer", icon: Car },
   { label: "What are tonight's dining hours?", icon: Clock },
+];
+
+const highlights = [
+  { icon: ShieldCheck, text: "Guest data stays private" },
+  { icon: MessageSquareText, text: "Guests can chat free forever" },
+  { icon: Wand2, text: "Sign in to save conversation history" },
 ];
 
 const containerVariants = {
@@ -59,7 +65,6 @@ export default function WelcomePage() {
 
   return (
     <div className="flex-1 w-full h-full relative flex items-center overflow-hidden">
-      {/* Ken Burns background */}
       <motion.div
         className="absolute inset-0 z-0"
         initial={{ scale: 1.04 }}
@@ -74,12 +79,10 @@ export default function WelcomePage() {
         />
       </motion.div>
 
-      {/* Layered overlays */}
       <div className="absolute inset-0 z-[1] bg-black/45" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
 
-      {/* Vignette pulse */}
       <motion.div
         className="absolute inset-0 z-[3] rounded-none pointer-events-none"
         style={{
@@ -89,7 +92,6 @@ export default function WelcomePage() {
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Shimmer line */}
       <motion.div
         className="absolute bottom-0 left-0 right-0 h-px z-[4]"
         style={{ background: "linear-gradient(90deg, transparent 0%, rgba(82,183,136,0.6) 50%, transparent 100%)" }}
@@ -97,14 +99,12 @@ export default function WelcomePage() {
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Main content */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
         className="relative z-[5] w-full max-w-2xl px-8 md:px-12 flex flex-col items-start"
       >
-        {/* Badge */}
         <motion.div variants={itemVariants} className="mb-7">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/8 backdrop-blur-md text-white/70 text-[11px] font-semibold tracking-[0.15em] uppercase">
             <motion.span
@@ -116,7 +116,6 @@ export default function WelcomePage() {
           </span>
         </motion.div>
 
-        {/* Headline */}
         <motion.div variants={itemVariants} className="mb-5">
           <h1
             className="text-5xl md:text-[4.5rem] font-bold leading-[1.04] tracking-[-0.02em] text-white"
@@ -138,7 +137,6 @@ export default function WelcomePage() {
           </h1>
         </motion.div>
 
-        {/* Subtitle */}
         <motion.p
           variants={itemVariants}
           className="text-base md:text-lg text-white/55 font-light max-w-sm mb-10 leading-relaxed"
@@ -146,9 +144,7 @@ export default function WelcomePage() {
           Where luxury meets innovation in the heart of paradise. Ask Aria anything about your stay.
         </motion.p>
 
-        {/* CTA Buttons */}
-        <motion.div variants={itemVariants} className="mb-12 flex flex-wrap items-center gap-3">
-          {/* Primary — Start a Conversation */}
+        <motion.div variants={itemVariants} className="mb-8 flex flex-wrap gap-3">
           <motion.button
             onClick={() => handleStart()}
             disabled={isPending}
@@ -158,12 +154,6 @@ export default function WelcomePage() {
             style={{
               background: "linear-gradient(135deg, #52b788 0%, #2d6a4f 100%)",
               boxShadow: "0 0 0 0 rgba(82,183,136,0)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px rgba(82,183,136,0.35)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(82,183,136,0)";
             }}
           >
             <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 rounded-2xl" />
@@ -180,7 +170,6 @@ export default function WelcomePage() {
             </motion.span>
           </motion.button>
 
-          {/* Secondary — Reserve Your Stay */}
           <motion.a
             href="https://legendary-manatee-c69f26.netlify.app/"
             target="_blank"
@@ -192,22 +181,8 @@ export default function WelcomePage() {
               background: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.18)",
               backdropFilter: "blur(12px)",
-              boxShadow: "0 0 0 0 rgba(255,255,255,0)",
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.background = "rgba(255,255,255,0.12)";
-              el.style.borderColor = "rgba(167,243,208,0.45)";
-              el.style.boxShadow = "0 8px 30px rgba(82,183,136,0.2), inset 0 1px 0 rgba(255,255,255,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.background = "rgba(255,255,255,0.06)";
-              el.style.borderColor = "rgba(255,255,255,0.18)";
-              el.style.boxShadow = "0 0 0 0 rgba(255,255,255,0)";
             }}
           >
-            {/* Animated shimmer sweep */}
             <motion.span
               className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
@@ -219,17 +194,19 @@ export default function WelcomePage() {
             />
             <ExternalLink className="w-4 h-4 relative z-10 text-emerald-300/80" />
             <span className="relative z-10 tracking-wide text-white/90">Reserve Your Stay</span>
-            <motion.span
-              className="relative z-10"
-              animate={{ x: [0, 3, 0] }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-            >
-              <ArrowRight className="w-4 h-4 text-emerald-300/70" />
-            </motion.span>
+            <ArrowRight className="w-4 h-4 relative z-10 text-emerald-300/70" />
           </motion.a>
         </motion.div>
 
-        {/* Quick suggestion chips */}
+        <motion.div variants={itemVariants} className="mb-8 flex flex-wrap gap-2">
+          {highlights.map(({ icon: Icon, text }) => (
+            <span key={text} className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.07] border border-white/[0.12] text-white/70 text-[11px] backdrop-blur-md">
+              <Icon className="w-3.5 h-3.5 text-emerald-400/80" />
+              {text}
+            </span>
+          ))}
+        </motion.div>
+
         <motion.div variants={itemVariants}>
           <p className="text-[10px] text-white/35 uppercase tracking-[0.18em] mb-3 font-medium">
             Quick requests
