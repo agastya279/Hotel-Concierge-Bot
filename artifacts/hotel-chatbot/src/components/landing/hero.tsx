@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useAuthContext } from "@/contexts/auth-context";
 import { AmbientBackground } from "./ambient-background";
@@ -187,6 +187,17 @@ export function Hero() {
             </motion.span>
           ))}
         </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="mt-16 flex justify-center"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">
+            <ChevronDown className="w-5 h-5" />
+          </a>
+        </motion.div>
       </div>
     </section>
   );
