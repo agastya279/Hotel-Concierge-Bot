@@ -53,7 +53,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-          className="mt-8 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-normal tracking-tight text-foreground leading-[1.05]"
+          className="mt-8 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-medium tracking-tight text-foreground leading-[1.05]"
         >
           Your personal AI
           <br />

@@ -90,7 +90,7 @@ export function Sidebar() {
           <div className="flex items-center gap-3 cursor-pointer group">
             <AnimatedLogo size={32} animated />
             <div>
-              <h2 className="font-display font-normal text-lg leading-none text-foreground">Seed Hotel</h2>
+              <h2 className="font-display font-medium text-lg leading-none text-foreground">Seed Hotel</h2>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Concierge</span>
             </div>
           </div>
@@ -218,7 +218,7 @@ export function Sidebar() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-xl border-b border-border/50 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <LogoBadge size={20} />
-          <h1 className="font-display font-normal text-lg text-foreground">Seed Hotel</h1>
+          <h1 className="font-display font-medium text-lg text-foreground">Seed Hotel</h1>
         </div>
         <button onClick={() => setIsOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Menu className="w-5 h-5" />

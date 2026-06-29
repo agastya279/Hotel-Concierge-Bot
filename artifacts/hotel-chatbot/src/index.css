@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme inline {
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -23,11 +24,10 @@
 }
 
 :root {
-  /* Seedling — cooler organic palette */
-  --background: 40 20% 97%;          /* warm cream #FAF6F1 */
-  --foreground: 160 20% 13%;         /* deep forest charcoal #1A2520 */
+  --background: 40 20% 97%;
+  --foreground: 160 20% 13%;
 
-  --primary: 150 33% 27%;            /* deep forest green #2D5A3D */
+  --primary: 150 33% 27%;
   --primary-foreground: 40 20% 97%;
 
   --card: 40 15% 98%;
@@ -36,12 +36,12 @@
   --popover: 40 20% 97%;
   --popover-foreground: 160 20% 13%;
 
-  --border: 150 10% 86%;             /* warm stone border */
+  --border: 150 10% 86%;
 
-  --muted: 150 8% 94%;               /* stone muted */
-  --muted-foreground: 150 6% 42%;    /* warm gray text */
+  --muted: 150 8% 94%;
+  --muted-foreground: 150 6% 42%;
 
-  --accent: 150 18% 93%;             /* light sage accent */
+  --accent: 150 18% 93%;
   --accent-foreground: 150 33% 27%;
 
   --destructive: 0 72% 51%;
@@ -58,7 +58,13 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply font-normal tracking-tight;
+    @apply font-medium tracking-tight;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+
+  code, kbd, pre {
+    font-family: var(--font-mono);
   }
 
   ::-webkit-scrollbar {
@@ -84,5 +90,12 @@
 
   .glass-panel {
     @apply bg-white/80 backdrop-blur-xl border border-border/50 shadow-sm;
+  }
+
+  .font-mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
 }

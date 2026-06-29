@@ -1,5 +1,8 @@
 import { motion } from "framer-motion";
-import { Bed, UtensilsCrossed, Waves, Plane, MapPin, Clock } from "lucide-react";
+import {
+  Bed, UtensilsCrossed, Waves, Plane, MapPin, Clock,
+  Shirt, ConciergeBell, CloudSun, Baby
+} from "lucide-react";
 
 const features = [
   {
@@ -38,11 +41,35 @@ const features = [
     description: "Get instant answers about anything — room service, housekeeping, maintenance, or general inquiries.",
     span: "col-span-1",
   },
+  {
+    icon: Shirt,
+    title: "Laundry & Housekeeping",
+    description: "Schedule daily cleaning, fresh linens, or express laundry service with flexible pickup times.",
+    span: "col-span-1",
+  },
+  {
+    icon: ConciergeBell,
+    title: "In-Room Dining",
+    description: "Order breakfast in bed, midnight snacks, or a full dinner from any restaurant straight to your room.",
+    span: "col-span-1",
+  },
+  {
+    icon: CloudSun,
+    title: "Weather & Packing Guide",
+    description: "Get live weather forecasts and smart packing suggestions tailored to your planned activities.",
+    span: "col-span-1",
+  },
+  {
+    icon: Baby,
+    title: "Kids & Family Activities",
+    description: "Find childcare services, family-friendly excursions, game rooms, and kids' club schedules.",
+    span: "col-span-1",
+  },
 ];
 
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
+  show: { transition: { staggerChildren: 0.06 } },
 };
 
 const item = {
@@ -55,8 +82,9 @@ export function FeatureGrid() {
     <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-display font-normal text-foreground">
-            Everything you need for the perfect stay
+          <span className="font-mono-label text-primary/70">SERVICES</span>
+          <h2 className="text-3xl sm:text-4xl font-display font-medium text-foreground mt-3">
+            EVERYTHING YOU NEED FOR THE PERFECT STAY
           </h2>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
             Aria connects every aspect of your resort experience into one seamless conversation.
@@ -68,7 +96,7 @@ export function FeatureGrid() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
           {features.map((f) => (
             <motion.div
@@ -79,7 +107,7 @@ export function FeatureGrid() {
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
                 <f.icon className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">{f.title}</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-2 tracking-wide">{f.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
             </motion.div>
           ))}

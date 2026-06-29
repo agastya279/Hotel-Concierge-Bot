@@ -27,7 +27,7 @@ export function Navbar() {
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
               <AnimatedLogo size={32} animated />
-              <span className="font-display font-normal text-lg text-foreground">SEED Resort</span>
+              <span className="font-display font-medium text-lg text-foreground">SEED Resort</span>
             </div>
           </Link>
 
