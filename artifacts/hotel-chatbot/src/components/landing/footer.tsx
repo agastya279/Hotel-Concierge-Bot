@@ -9,7 +9,7 @@ export function Footer() {
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
               <Hotel className="w-3.5 h-3.5 text-primary" />
             </div>
-            <span className="font-display font-semibold text-sm text-foreground">SEED Resort</span>
+            <span className="font-display font-normal text-sm text-foreground">SEED Resort</span>
           </div>
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} SEED Resort. AI concierge powered by frontier language models.

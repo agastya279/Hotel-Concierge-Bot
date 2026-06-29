@@ -53,7 +53,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
         "w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-sm mt-0.5 border",
         isUser ? "bg-muted border-border" : "border-primary/20"
       )}
-        style={!isUser ? { background: "linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)" } : undefined}
+        style={!isUser ? { background: "linear-gradient(135deg, #2D5A3D 0%, #5A8F6E 100%)" } : undefined}
       >
         {isUser ? (
           <User className="w-3.5 h-3.5 text-muted-foreground" />

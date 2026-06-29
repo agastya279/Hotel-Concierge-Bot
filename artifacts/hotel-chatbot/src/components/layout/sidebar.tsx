@@ -90,7 +90,7 @@ export function Sidebar() {
           <div className="flex items-center gap-3 cursor-pointer group">
             <AnimatedLogo size={32} animated />
             <div>
-              <h2 className="font-display font-semibold text-lg leading-none text-foreground">Seed Hotel</h2>
+              <h2 className="font-display font-normal text-lg leading-none text-foreground">Seed Hotel</h2>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Concierge</span>
             </div>
           </div>
@@ -183,7 +183,7 @@ export function Sidebar() {
             <button
               onClick={login}
               className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold text-white transition-all"
-              style={{ background: "linear-gradient(135deg, #52b788 0%, #2d6a4f 100%)" }}
+              style={{ background: "linear-gradient(135deg, #5A8F6E 0%, #2D5A3D 100%)" }}
             >
               <LogIn className="w-3.5 h-3.5" />Sign in / Sign up
             </button>
@@ -218,7 +218,7 @@ export function Sidebar() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-xl border-b border-border/50 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <LogoBadge size={20} />
-          <h1 className="font-display font-semibold text-lg text-foreground">Seed Hotel</h1>
+          <h1 className="font-display font-normal text-lg text-foreground">Seed Hotel</h1>
         </div>
         <button onClick={() => setIsOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Menu className="w-5 h-5" />

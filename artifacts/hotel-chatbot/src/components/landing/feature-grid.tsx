@@ -55,7 +55,7 @@ export function FeatureGrid() {
     <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+          <h2 className="text-3xl sm:text-4xl font-display font-normal text-foreground">
             Everything you need for the perfect stay
           </h2>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">

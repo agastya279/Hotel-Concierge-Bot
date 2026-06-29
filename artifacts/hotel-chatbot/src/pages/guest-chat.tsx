@@ -122,7 +122,7 @@ export default function GuestChatPage() {
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <span className="text-white font-bold text-[10px]" style={{
-                background: "linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)",
+                background: "linear-gradient(135deg, #2D5A3D 0%, #5A8F6E 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
