@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { Plus, MessageSquare, Trash2, X, Menu, Hotel, LogIn, LogOut, User, BookOpen, Search } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, Menu, LogIn, LogOut, User, BookOpen, Search } from "lucide-react";
+import { AnimatedLogo, LogoBadge } from "@/components/ui/animated-logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -87,9 +88,7 @@ export function Sidebar() {
       <div className="p-4 flex flex-col gap-4">
         <Link href="/" onClick={() => setIsOpen(false)}>
           <div className="flex items-center gap-3 cursor-pointer group">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
-              <Hotel className="w-4 h-4 text-primary" />
-            </div>
+            <AnimatedLogo size={32} animated />
             <div>
               <h2 className="font-display font-semibold text-lg leading-none text-foreground">Seed Hotel</h2>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Concierge</span>
@@ -218,7 +217,7 @@ export function Sidebar() {
     <>
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-xl border-b border-border/50 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <Hotel className="w-5 h-5 text-primary" />
+          <LogoBadge size={20} />
           <h1 className="font-display font-semibold text-lg text-foreground">Seed Hotel</h1>
         </div>
         <button onClick={() => setIsOpen(true)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Hotel, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -25,9 +26,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
-                <Hotel className="w-4 h-4 text-primary" />
-              </div>
+              <AnimatedLogo size={32} animated />
               <span className="font-display font-semibold text-lg text-foreground">SEED Resort</span>
             </div>
           </Link>

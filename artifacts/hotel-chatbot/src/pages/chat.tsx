@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useSearch, Link } from "wouter";
-import { Send, Sparkles, Hotel, ArrowDown, Square, Pencil, Check, X, ArrowLeft } from "lucide-react";
+import { Send, Sparkles, ArrowDown, Square, Pencil, Check, X, ArrowLeft } from "lucide-react";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -190,9 +191,7 @@ export default function ChatPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="flex flex-col items-center justify-center h-full text-center px-4 gap-3"
           >
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Hotel className="w-6 h-6 text-primary" />
-            </div>
+            <AnimatedLogo size={56} animated />
             <p className="text-muted-foreground text-sm">Say hello to Aria, your Seed concierge.</p>
           </motion.div>
         )}
