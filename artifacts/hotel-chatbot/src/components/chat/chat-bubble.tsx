@@ -41,25 +41,19 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.4,
-        delay: Math.min(index * 0.04, 0.3),
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      transition={{ duration: 0.35, delay: Math.min(index * 0.03, 0.2), ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "group flex w-full gap-3 py-5 px-4 md:px-8 max-w-4xl mx-auto",
-        !isUser && "bg-white/[0.02] border-l-2 border-primary/40 rounded-r-2xl my-1"
+        "group flex w-full gap-3 py-4 px-4 md:px-8 max-w-4xl mx-auto",
+        !isUser && "border-l-2 border-primary/20 rounded-r-2xl my-0.5"
       )}
     >
       <div className={cn(
         "w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-sm mt-0.5 border",
-        isUser ? "bg-accent border-border" : "border-primary/20"
+        isUser ? "bg-muted border-border" : "border-primary/20"
       )}
-        style={!isUser ? {
-          background: "linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)",
-        } : undefined}
+        style={!isUser ? { background: "linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)" } : undefined}
       >
         {isUser ? (
           <User className="w-3.5 h-3.5 text-muted-foreground" />
@@ -68,44 +62,29 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
         )}
       </div>
 
-      <div className="flex-1 min-w-0 space-y-1.5">
+      <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="block text-[12px] font-semibold tracking-widest uppercase text-muted-foreground/70">
-            {isUser ? "You" : "Aria · Seed Concierge"}
+          <span className="block text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/60">
+            {isUser ? "You" : "Aria"}
           </span>
           <div className="flex items-center gap-2">
             {timestamp && (
-              <span className="text-[10px] text-muted-foreground/40 tabular-nums">
-                {formatTime(timestamp)}
-              </span>
+              <span className="text-[10px] text-muted-foreground/35 tabular-nums">{formatTime(timestamp)}</span>
             )}
             {!isUser && content && !isStreaming && (
               <motion.button
                 onClick={handleCopy}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                 title="Copy response"
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-md hover:bg-white/10 text-muted-foreground/50 hover:text-foreground"
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-md hover:bg-muted text-muted-foreground/40 hover:text-foreground"
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {copied ? (
-                    <motion.span
-                      key="check"
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
+                    <motion.span key="check" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
                       <Check className="w-3.5 h-3.5 text-primary" />
                     </motion.span>
                   ) : (
-                    <motion.span
-                      key="copy"
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
+                    <motion.span key="copy" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
                       <Copy className="w-3.5 h-3.5" />
                     </motion.span>
                   )}
@@ -120,7 +99,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
             isUser ? (
               <p className="whitespace-pre-wrap">{content}</p>
             ) : (
-              <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-ul:my-2 prose-ul:pl-4 prose-ol:my-2 prose-ol:pl-4 prose-li:my-0.5 prose-strong:text-foreground prose-strong:font-semibold prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-ul:my-2 prose-ul:pl-4 prose-ol:my-2 prose-ol:pl-4 prose-li:my-0.5 prose-strong:text-foreground prose-strong:font-semibold prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                 <ReactMarkdown>{content}</ReactMarkdown>
               </div>
             )

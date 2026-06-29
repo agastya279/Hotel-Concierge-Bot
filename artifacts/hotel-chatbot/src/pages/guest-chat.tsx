@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSearch } from "wouter";
-import { Send, Hotel, ArrowDown, LogIn, Square } from "lucide-react";
+import { useSearch, Link } from "wouter";
+import { Send, Hotel, ArrowDown, Square, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGuestStream } from "@/hooks/use-guest-stream";
 import { ChatBubble } from "@/components/chat/chat-bubble";
@@ -15,7 +15,7 @@ interface GuestMessage {
 
 export default function GuestChatPage() {
   const search = useSearch();
-  const { login } = useAuthContext();
+  const { login, isAuthenticated } = useAuthContext();
 
   const [messages, setMessages] = useState<GuestMessage[]>([]);
   const [input, setInput] = useState("");
@@ -56,7 +56,6 @@ export default function GuestChatPage() {
 
   const doSend = useCallback(async (text: string) => {
     if (!text.trim() || isStreaming) return;
-
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
     const userMsg: GuestMessage = {
       id: ++idCounter.current,
@@ -65,7 +64,6 @@ export default function GuestChatPage() {
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMsg]);
-
     setTimeout(() => scrollToBottom("smooth"), 50);
 
     const response = await sendMessage(text, history);
@@ -80,7 +78,6 @@ export default function GuestChatPage() {
     }
   }, [isStreaming, messages, sendMessage, scrollToBottom]);
 
-  // Auto-send initial message from suggestion chip (?init=...)
   useEffect(() => {
     if (autoSentRef.current) return;
     const params = new URLSearchParams(search);
@@ -89,7 +86,7 @@ export default function GuestChatPage() {
       autoSentRef.current = true;
       doSend(initMsg);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSend = () => {
@@ -113,11 +110,26 @@ export default function GuestChatPage() {
 
   return (
     <div className="flex flex-col h-full w-full relative bg-background">
-      {/* Header */}
-      <div className="shrink-0 h-14 border-b border-border/40 bg-background/80 backdrop-blur-md flex items-center justify-between px-6 z-10">
-        <h2 className="font-semibold text-base text-foreground truncate">
-          Conversation with Aria
-        </h2>
+      {/* Top bar */}
+      <div className="shrink-0 h-14 border-b border-border/40 bg-white/60 backdrop-blur-md flex items-center justify-between px-4 md:px-6 z-10">
+        <div className="flex items-center gap-3">
+          <Link href="/">
+            <button className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </Link>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+              <span className="text-white font-bold text-[10px]" style={{
+                background: "linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>A</span>
+            </div>
+            <h2 className="font-semibold text-sm text-foreground">Aria</h2>
+          </div>
+        </div>
         <div className="flex items-center gap-3">
           <AnimatePresence>
             {isStreaming && (
@@ -133,21 +145,22 @@ export default function GuestChatPage() {
                   animate={{ opacity: [1, 0.3, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
-                Aria is thinking…
+                Thinking…
               </motion.div>
             )}
           </AnimatePresence>
-          <button
-            onClick={login}
-            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            Sign in to save
-          </button>
+          {!isAuthenticated && (
+            <button
+              onClick={login}
+              className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-primary/5"
+            >
+              Sign in to save
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
@@ -165,11 +178,9 @@ export default function GuestChatPage() {
             </div>
             <p className="text-muted-foreground text-sm">Say hello to Aria, your Seed concierge.</p>
             <p className="text-xs text-muted-foreground/60 max-w-xs">
-              You're chatting as a guest. Your conversation won't be saved.{" "}
-              <button onClick={login} className="underline hover:text-primary transition-colors">
-                Sign in
-              </button>{" "}
-              to keep your history.
+              Chat as a guest.{" "}
+              <button onClick={login} className="underline hover:text-primary transition-colors">Sign in</button>{" "}
+              to save history.
             </p>
           </motion.div>
         )}
@@ -196,7 +207,7 @@ export default function GuestChatPage() {
         <div ref={bottomRef} className="h-1" />
       </div>
 
-      {/* Scroll to bottom button */}
+      {/* Scroll button */}
       <AnimatePresence>
         {showScrollBtn && (
           <motion.button
@@ -204,9 +215,9 @@ export default function GuestChatPage() {
             initial={{ opacity: 0, y: 8, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.2 }}
             onClick={() => scrollToBottom("smooth")}
-            className="absolute bottom-28 right-6 z-20 flex items-center gap-2 px-3.5 py-2 rounded-full bg-card border border-border shadow-lg text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all text-xs font-medium backdrop-blur-md"
+            className="absolute bottom-28 right-6 z-20 flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-border shadow-md text-muted-foreground hover:text-foreground hover:border-primary/30 hover:shadow-lg transition-all text-xs font-medium"
           >
             <ArrowDown className="w-3.5 h-3.5" />
             Scroll down
@@ -214,24 +225,20 @@ export default function GuestChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Input Area */}
+      {/* Input */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/98 to-transparent pt-8 pb-5 px-4 md:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="relative glass-panel rounded-2xl p-1.5 flex items-end shadow-lg border border-border focus-within:border-primary/30 transition-colors duration-200">
+          <div className="relative bg-white rounded-2xl p-1.5 flex items-end shadow-md border border-border focus-within:border-primary/30 focus-within:shadow-lg transition-all duration-200">
             <textarea
               ref={textareaRef}
               value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                resizeTextarea();
-              }}
+              onChange={(e) => { setInput(e.target.value); resizeTextarea(); }}
               onKeyDown={handleKeyDown}
               placeholder="Message Aria…"
               className="w-full max-h-48 min-h-[44px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 px-4 py-3 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed"
               rows={1}
               disabled={isStreaming}
             />
-            {/* Character counter */}
             <AnimatePresence>
               {showCharCount && (
                 <motion.span
@@ -244,7 +251,6 @@ export default function GuestChatPage() {
                 </motion.span>
               )}
             </AnimatePresence>
-            {/* Send / Stop button */}
             {isStreaming ? (
               <motion.button
                 key="stop"
@@ -252,8 +258,7 @@ export default function GuestChatPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 onClick={stopStreaming}
-                title="Stop generating"
-                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-muted hover:bg-destructive/20 border border-border hover:border-destructive/40 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/30 flex items-center justify-center transition-all"
               >
                 <Square className="w-3.5 h-3.5 text-muted-foreground fill-muted-foreground" />
               </motion.button>
@@ -261,14 +266,14 @@ export default function GuestChatPage() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all hover:scale-105 active:scale-95"
               >
                 <Send className="w-3.5 h-3.5 text-white" />
               </button>
             )}
           </div>
           <p className="text-center mt-2.5 text-[10px] text-muted-foreground/40 tracking-widest uppercase">
-            Seed Hotel Concierge · Powered by AI
+            SEED Hotel Concierge · Powered by AI
           </p>
         </div>
       </div>
