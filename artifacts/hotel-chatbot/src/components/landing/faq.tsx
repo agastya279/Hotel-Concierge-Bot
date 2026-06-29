@@ -32,31 +32,65 @@ export function FAQ() {
     <section id="faq" className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-16">
-          <span className="font-mono-label text-primary/70">FAQ</span>
-          <h2 className="text-3xl sm:text-4xl font-display font-medium text-foreground mt-3">
+          <motion.span
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="font-mono-label text-primary/70"
+          >
+            FAQ
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-3xl sm:text-4xl font-display font-medium text-foreground mt-3"
+          >
             Frequently asked questions
-          </h2>
-          <p className="mt-4 text-muted-foreground">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-4 text-muted-foreground"
+          >
             Everything you need to know about Aria.
-          </p>
+          </motion.p>
         </div>
 
-        <div className="space-y-3">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.08 } },
+          }}
+          className="space-y-3"
+        >
           {faqs.map((faq, i) => (
-            <div
+            <motion.div
               key={i}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+              }}
               className="rounded-xl bg-white border border-border/60 overflow-hidden"
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors"
+                className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors group"
               >
                 <span className="text-sm font-medium text-foreground pr-4">{faq.q}</span>
                 <motion.div
                   animate={{ rotate: open === i ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="shrink-0"
                 >
-                  <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </motion.div>
               </button>
               <AnimatePresence initial={false}>
@@ -65,18 +99,24 @@ export function FAQ() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
-                    <p className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">
+                    <motion.p
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.25, delay: 0.05 }}
+                      className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed"
+                    >
                       {faq.a}
-                    </p>
+                    </motion.p>
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
