@@ -1,4 +1,5 @@
 import { LogoBadge } from "@/components/ui/animated-logo";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 
 export function Footer() {
@@ -27,14 +28,14 @@ export function Footer() {
               Chat
               <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary group-hover:w-full transition-all duration-300" />
             </a>
-            <a href="#" className="hover:text-foreground transition-colors relative group">
+            <Link href="/privacy" className="hover:text-foreground transition-colors relative group">
               Privacy
               <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary group-hover:w-full transition-all duration-300" />
-            </a>
-            <a href="#" className="hover:text-foreground transition-colors relative group">
+            </Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors relative group">
               Terms
               <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary group-hover:w-full transition-all duration-300" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

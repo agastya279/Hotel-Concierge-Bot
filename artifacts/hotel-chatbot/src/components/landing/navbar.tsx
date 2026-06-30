@@ -89,14 +89,15 @@ export function Navbar() {
                 animate={{ opacity: 1 }}
                 className="flex items-center gap-3"
               >
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={login}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Sign in
-                </motion.button>
+                <Link href="/login">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign in
+                  </motion.button>
+                </Link>
                 <Link href="/chat">
                   <motion.button
                     whileHover={{ scale: 1.04, y: -1 }}
@@ -182,12 +183,11 @@ export function Navbar() {
                   </button>
                 ) : (
                   <>
-                    <button
-                      onClick={() => { login(); setMobileOpen(false); }}
-                      className="w-full px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
-                    >
-                      Sign in
-                    </button>
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      <button className="w-full px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-left">
+                        Sign in
+                      </button>
+                    </Link>
                     <Link href="/chat" onClick={() => setMobileOpen(false)}>
                       <button className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-left">
                         Start Chat

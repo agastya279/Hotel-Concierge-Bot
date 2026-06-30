@@ -13,6 +13,9 @@ import { AppLayout } from "@/components/layout/app-layout";
 import WelcomePage from "@/pages/welcome";
 import ChatPage from "@/pages/chat";
 import GuestChatPage from "@/pages/guest-chat";
+import LoginPage from "@/pages/login";
+import TermsPage from "@/pages/terms";
+import PrivacyPage from "@/pages/privacy";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +68,9 @@ function Router() {
         <Route path="/" component={WelcomePage} />
         <Route path="/chat" component={GuestChatPage} />
         <Route path="/c/:id" component={ChatPage} />
+        <Route path="/login" component={LoginPage} />
+        <Route path="/terms" component={TermsPage} />
+        <Route path="/privacy" component={PrivacyPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

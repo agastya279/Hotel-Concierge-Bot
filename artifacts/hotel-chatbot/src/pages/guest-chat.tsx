@@ -151,12 +151,11 @@ export default function GuestChatPage() {
             )}
           </AnimatePresence>
           {!isAuthenticated && (
-            <button
-              onClick={login}
-              className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-primary/5"
-            >
-              Sign in to save
-            </button>
+            <Link href="/login">
+              <button className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-primary/5">
+                Sign in to save
+              </button>
+            </Link>
           )}
         </div>
       </div>
@@ -178,7 +177,7 @@ export default function GuestChatPage() {
             <p className="text-muted-foreground text-sm">Say hello to Aria, your Seed concierge.</p>
             <p className="text-xs text-muted-foreground/60 max-w-xs">
               Chat as a guest.{" "}
-              <button onClick={login} className="underline hover:text-primary transition-colors">Sign in</button>{" "}
+              <Link href="/login" className="underline hover:text-primary transition-colors">Sign in</Link>{" "}
               to save history.
             </p>
           </motion.div>

@@ -180,13 +180,14 @@ export function Sidebar() {
               <p className="text-xs font-semibold text-foreground/80 leading-snug">Save your conversations</p>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">Sign in to save your chat history and pick up where you left off on any device.</p>
-            <button
-              onClick={login}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold text-white transition-all"
-              style={{ background: "linear-gradient(135deg, #5A8F6E 0%, #2D5A3D 100%)" }}
-            >
-              <LogIn className="w-3.5 h-3.5" />Sign in / Sign up
-            </button>
+            <Link href="/login" className="w-full">
+              <button
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold text-white transition-all"
+                style={{ background: "linear-gradient(135deg, #5A8F6E 0%, #2D5A3D 100%)" }}
+              >
+                <LogIn className="w-3.5 h-3.5" />Sign in / Sign up
+              </button>
+            </Link>
           </div>
         )}
       </div>

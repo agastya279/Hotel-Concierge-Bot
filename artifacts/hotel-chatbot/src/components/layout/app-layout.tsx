@@ -6,9 +6,11 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
+const LANDING_PATHS = ["/", "/login", "/terms", "/privacy"];
+
 export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
-  const isLanding = location === "/";
+  const isLanding = LANDING_PATHS.includes(location);
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden relative">
