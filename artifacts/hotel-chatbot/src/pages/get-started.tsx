@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowRight, MessageCircle, Sparkles, Hotel, Clock, Shield, ChevronRight } from "lucide-react";
 import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -28,7 +29,27 @@ const features = [
 ];
 
 export default function GetStartedPage() {
-  const { user } = useAuthContext();
+  const { user, isLoading, isAuthenticated } = useAuthContext();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <AnimatedLogo size={40} animated />
+          <p className="text-sm text-muted-foreground">Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

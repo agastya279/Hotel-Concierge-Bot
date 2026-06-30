@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ArrowLeft,
   LogOut,
@@ -7,15 +8,33 @@ import {
   Mail,
   Calendar,
   Shield,
-  Edit3,
   ChevronRight,
-  User,
 } from "lucide-react";
 import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { useAuthContext } from "@/contexts/auth-context";
 
 export default function YourCardPage() {
-  const { user, logout } = useAuthContext();
+  const { user, isLoading, isAuthenticated, logout } = useAuthContext();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <AnimatedLogo size={40} animated />
+          <p className="text-sm text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   const initials = user?.firstName?.[0] || user?.email?.[0] || "?";
 
@@ -74,11 +93,19 @@ export default function YourCardPage() {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
-                className="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-lg flex items-center justify-center"
+                className="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-lg flex items-center justify-center overflow-hidden"
               >
-                <span className="text-3xl font-display font-bold text-primary">
-                  {initials.toUpperCase()}
-                </span>
+                {user?.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt={user.firstName || "User"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl font-display font-bold text-primary">
+                    {initials.toUpperCase()}
+                  </span>
+                )}
               </motion.div>
             </div>
 

@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 interface AuthContextType {
-  user: { id: string; firstName: string | null; email: string | null } | null;
+  user: { id: string; firstName: string | null; email: string | null; profileImageUrl: string | null } | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: () => void;
@@ -49,6 +49,7 @@ export function useAuthContext(): AuthContextType {
           id: user.id,
           firstName: user.firstName,
           email: user.primaryEmailAddress?.emailAddress || null,
+          profileImageUrl: user.imageUrl || null,
         }
       : null,
     isLoading: !isLoaded,

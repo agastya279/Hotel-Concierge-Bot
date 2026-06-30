@@ -102,7 +102,12 @@ export default function LoginPage() {
                 </p>
               </motion.div>
 
-              <SignIn routing="path" path={`${basePath}/login`} signUpUrl={`${basePath}/sign-up`} />
+              <SignIn
+                routing="path"
+                path={`${basePath}/login`}
+                signUpUrl={`${basePath}/sign-up`}
+                fallbackRedirectUrl={`${basePath}/chat`}
+              />
 
               {/* Divider */}
               <div className="relative py-3 my-2">

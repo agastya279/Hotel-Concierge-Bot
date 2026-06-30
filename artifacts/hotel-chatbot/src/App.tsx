@@ -148,7 +148,12 @@ function KeyboardShortcuts() {
 function SignInPage() {
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+      <SignIn
+        routing="path"
+        path={`${basePath}/sign-in`}
+        signUpUrl={`${basePath}/sign-up`}
+        fallbackRedirectUrl={`${basePath}/chat`}
+      />
     </div>
   );
 }
@@ -156,7 +161,12 @@ function SignInPage() {
 function SignUpPage() {
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      <SignUp
+        routing="path"
+        path={`${basePath}/sign-up`}
+        signInUrl={`${basePath}/sign-in`}
+        fallbackRedirectUrl={`${basePath}/get-started`}
+      />
     </div>
   );
 }
@@ -192,8 +202,6 @@ function ClerkApp() {
       appearance={clerkAppearance}
       signInUrl={`${basePath}/login`}
       signUpUrl={`${basePath}/sign-up`}
-      afterSignUpUrl={`${basePath}/get-started`}
-      afterSignInUrl={`${basePath}/chat`}
       localization={{
         signIn: {
           start: {
