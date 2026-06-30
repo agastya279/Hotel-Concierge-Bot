@@ -16,6 +16,8 @@ import WelcomePage from "@/pages/welcome";
 import ChatPage from "@/pages/chat";
 import GuestChatPage from "@/pages/guest-chat";
 import LoginPage from "@/pages/login";
+import GetStartedPage from "@/pages/get-started";
+import YourCardPage from "@/pages/your-card";
 import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
 
@@ -170,6 +172,8 @@ function Router() {
         <Route path="/login" component={LoginPage} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route path="/get-started" component={GetStartedPage} />
+        <Route path="/your-card" component={YourCardPage} />
         <Route path="/terms" component={TermsPage} />
         <Route path="/privacy" component={PrivacyPage} />
         <Route component={NotFound} />
@@ -188,6 +192,8 @@ function ClerkApp() {
       appearance={clerkAppearance}
       signInUrl={`${basePath}/login`}
       signUpUrl={`${basePath}/sign-up`}
+      afterSignUpUrl={`${basePath}/get-started`}
+      afterSignInUrl={`${basePath}/chat`}
       localization={{
         signIn: {
           start: {

@@ -6,7 +6,7 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-const LANDING_PATHS = ["/", "/login", "/sign-in", "/sign-up", "/terms", "/privacy"];
+const LANDING_PATHS = ["/", "/login", "/sign-in", "/sign-up", "/get-started", "/your-card", "/terms", "/privacy"];
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
