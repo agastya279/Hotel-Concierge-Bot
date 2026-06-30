@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useAuthContext } from "@/contexts/auth-context";
-import { AmbientBackground } from "./ambient-background";
+import mountainBg from "@assets/kalen-emsley-Bkci_8qcdvQ-unsplash_1782823355979.jpg";
 
 function AnimatedHeadline({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
   const words = text.split(" ");
@@ -75,17 +75,16 @@ export function Hero() {
   };
 
   return (
-    <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      <AmbientBackground />
-
-      {/* Subtle dot grid */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)`,
-          backgroundSize: "40px 40px",
-        }}
-      />
+    <section
+      className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-[85vh] flex items-center"
+      style={{
+        backgroundImage: `url(${mountainBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
 
       <div className="max-w-5xl mx-auto text-center relative">
         {/* Badge pill with shimmer */}
@@ -97,29 +96,29 @@ export function Hero() {
         >
           <a
             href="/chat"
-            className="relative inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-muted/50 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all group overflow-hidden"
+            className="relative inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm text-sm text-white/80 hover:text-white hover:border-white/40 transition-all group overflow-hidden"
           >
             {/* Shimmer sweep */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
               animate={{ x: ["-100%", "200%"] }}
               transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
             />
-            <span className="relative flex items-center gap-1.5 text-xs font-medium text-primary">
+            <span className="relative flex items-center gap-1.5 text-xs font-medium text-white">
               <Sparkles className="w-3.5 h-3.5" />
               New
             </span>
-            <span className="relative w-px h-3 bg-border" />
+            <span className="relative w-px h-3 bg-white/30" />
             <span className="relative">AI Concierge now available</span>
             <ArrowRight className="relative w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </a>
         </motion.div>
 
         {/* Animated headline */}
-        <h1 className="mt-8 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-medium tracking-tight text-foreground leading-[1.05] perspective-[1000px]">
+        <h1 className="mt-8 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-medium tracking-tight text-white leading-[1.05] perspective-[1000px]">
           <AnimatedHeadline text="Your personal AI" delay={0.1} />
           <br />
-          <span className="text-gradient-brand inline-block">
+          <span className="text-white/80 inline-block">
             <AnimatedHeadline text="concierge." delay={0.4} />
           </span>
         </h1>
@@ -129,7 +128,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+          className="mt-6 text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed"
         >
           Aria handles everything about your stay — room bookings, dining reservations,
           spa appointments, local recommendations, and 24/7 guest support.
@@ -155,7 +154,7 @@ export function Hero() {
           >
             <MagneticButton
               variant="outline"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-white/30 text-sm font-semibold text-white hover:bg-white/15 backdrop-blur-sm transition-colors active:scale-[0.98]"
             >
               Reserve Your Stay
             </MagneticButton>
@@ -164,7 +163,7 @@ export function Hero() {
 
         {/* Trust badges */}
         <div
-          className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground"
+          className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-white/70"
         >
           {[
             "No credit card required",
@@ -179,7 +178,7 @@ export function Hero() {
               transition={{ delay: 1.0 + i * 0.15, duration: 0.4, type: "spring" }}
             >
               <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-primary"
+                className="w-1.5 h-1.5 rounded-full bg-white"
                 animate={{ scale: [1, 1.4, 1] }}
                 transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
               />
@@ -194,7 +193,7 @@ export function Hero() {
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">
+          <a href="#features" className="text-white/60 hover:text-white transition-colors">
             <ChevronDown className="w-5 h-5" />
           </a>
         </motion.div>
