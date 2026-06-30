@@ -16,7 +16,7 @@ interface GuestMessage {
 
 export default function GuestChatPage() {
   const search = useSearch();
-  const { login, isAuthenticated } = useAuthContext();
+  const { login, isAuthenticated, user } = useAuthContext();
 
   const [messages, setMessages] = useState<GuestMessage[]>([]);
   const [input, setInput] = useState("");

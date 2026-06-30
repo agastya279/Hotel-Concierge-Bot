@@ -1,6 +1,7 @@
-import * as oidc from "openid-client";
 import { type Request, type Response, type NextFunction } from "express";
+import { getAuth } from "@clerk/express";
 import type { AuthUser } from "@workspace/api-zod";
+import * as oidc from "openid-client";
 import {
   clearSession,
   getOidcConfig,
@@ -16,7 +17,6 @@ declare global {
 
     interface Request {
       isAuthenticated(): this is AuthedRequest;
-
       user?: User | undefined;
     }
 
@@ -62,6 +62,21 @@ export async function authMiddleware(
     return this.user != null;
   } as Request["isAuthenticated"];
 
+  // 1. Try Clerk auth first
+  const clerkAuth = getAuth(req);
+  if (clerkAuth?.userId) {
+    req.user = {
+      id: clerkAuth.userId,
+      email: null,
+      firstName: null,
+      lastName: null,
+      profileImageUrl: null,
+    };
+    next();
+    return;
+  }
+
+  // 2. Fall back to legacy Replit Auth OIDC session
   const sid = getSessionId(req);
   if (!sid) {
     next();
