@@ -1,6 +1,7 @@
+import React from "react";
 import { useLocation } from "wouter";
 import { ArrowRight, Sparkles, ChevronDown } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { useAuthContext } from "@/contexts/auth-context";
 import mountainBg from "@assets/kalen-emsley-Bkci_8qcdvQ-unsplash_1782823355979.jpg";
 
@@ -69,6 +70,12 @@ function MagneticButton({ children, className, onClick, variant = "primary" }: {
 export function Hero() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuthContext();
+  const ref = React.useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
 
   const handleChat = () => {
     setLocation(isAuthenticated ? "/chat" : "/chat");
@@ -76,13 +83,19 @@ export function Hero() {
 
   return (
     <section
+      ref={ref}
       className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-[85vh] flex items-center"
-      style={{
-        backgroundImage: `url(${mountainBg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
     >
+      {/* Parallax background */}
+      <motion.div
+        className="absolute inset-0 -top-20 -bottom-20"
+        style={{
+          y,
+          backgroundImage: `url(${mountainBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
       {/* Dark overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
 
