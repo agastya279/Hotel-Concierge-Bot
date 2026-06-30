@@ -5,6 +5,8 @@ import { MarqueeBanner } from "@/components/landing/marquee";
 import { StatsSection } from "@/components/landing/stats-section";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { RoomShowcase } from "@/components/landing/room-showcase";
+import { SportsSection } from "@/components/landing/sports-section";
+import { SustainabilitySection } from "@/components/landing/sustainability-section";
 import { ParallaxDivider } from "@/components/landing/parallax-divider";
 import { ChatPreview } from "@/components/landing/chat-preview";
 import { FeatureGrid } from "@/components/landing/feature-grid";
@@ -24,6 +26,8 @@ export default function WelcomePage() {
       <StatsSection />
       <HowItWorks />
       <RoomShowcase />
+      <SportsSection />
+      <SustainabilitySection />
       <ParallaxDivider />
       <ChatPreview />
       <FeatureGrid />

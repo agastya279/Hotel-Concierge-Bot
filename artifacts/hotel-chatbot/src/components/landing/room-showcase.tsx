@@ -1,33 +1,51 @@
 import { motion } from "framer-motion";
-import { Users, Wifi, Waves, Mountain } from "lucide-react";
+import { Users, Eye, Sailboat, Trees, Dumbbell, TentTree } from "lucide-react";
 
 const rooms = [
   {
-    name: "Ocean Suite",
-    tagline: "Wake to the sound of waves",
+    name: "Lotus View Suite",
+    tagline: "Floor-to-ceiling curved glass over the central waterway",
     guests: 2,
-    perks: ["Ocean View", "King Bed", "Private Balcony"],
-    icon: Waves,
+    perks: ["Smart Glass", "Biometric Entry", "Waterway View"],
+    icon: Eye,
     color: "from-emerald-500/20 to-teal-500/10",
     accent: "#2D5A3D",
   },
   {
-    name: "Garden Villa",
-    tagline: "Surrounded by tropical serenity",
-    guests: 4,
-    perks: ["Garden Access", "Two Bedrooms", "Outdoor Shower"],
-    icon: Mountain,
+    name: "Marina Overwater Villa",
+    tagline: "Floating experience connected to the beachside dock",
+    guests: 2,
+    perks: ["Overwater Deck", "Direct Marina", "Ambient AI Audio"],
+    icon: Sailboat,
+    color: "from-sky-500/20 to-cyan-500/10",
+    accent: "#2D6A7A",
+  },
+  {
+    name: "Forest Canopy Room",
+    tagline: "Elevated within the tropical treeline",
+    guests: 2,
+    perks: ["Treetop Balcony", "Air Quality Monitor", "Nature Immersion"],
+    icon: Trees,
     color: "from-green-500/20 to-emerald-500/10",
     accent: "#3D6B4D",
   },
   {
-    name: "Sunset Penthouse",
-    tagline: "Panoramic views from above",
-    guests: 2,
-    perks: ["Rooftop Terrace", "Jacuzzi", "Butler Service"],
-    icon: Wifi,
+    name: "Sports Courtside Room",
+    tagline: "Direct balcony views of the football pitch & tennis courts",
+    guests: 3,
+    perks: ["Courtside View", "Fitness Pass", "Smart Climate"],
+    icon: Dumbbell,
     color: "from-amber-500/20 to-orange-500/10",
-    accent: "#5A4A3D",
+    accent: "#7A5A2D",
+  },
+  {
+    name: "Equestrian Lodge",
+    tagline: "Nestled beside the stables with paddock views",
+    guests: 4,
+    perks: ["Stable Access", "Riding Pass", "Country Warmth"],
+    icon: TentTree,
+    color: "from-rose-500/20 to-pink-500/10",
+    accent: "#7A3D4D",
   },
 ];
 
@@ -52,25 +70,32 @@ export function RoomShowcase() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-3xl sm:text-4xl font-display font-medium text-foreground mt-3"
           >
-            CURATED SPACES FOR EVERY STAY
+            SMART ROOMS, FIVE WORLDS
           </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-4 text-muted-foreground max-w-xl mx-auto"
+          >
+            Every room features Smart Glass Windows, Biometric Entry, Ambient AI Speakers, and real-time Air Quality Monitoring.
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {rooms.map((room, i) => (
             <motion.div
               key={room.name}
               initial={{ opacity: 0, y: 40, rotateX: -8 }}
               whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               whileHover={{ y: -8, transition: { duration: 0.3 } }}
               className="group relative rounded-2xl overflow-hidden border border-border/60 bg-white hover:border-primary/20 hover:shadow-xl transition-all duration-500"
               style={{ perspective: 1000 }}
             >
-              {/* Top gradient area */}
               <div className={`h-40 bg-gradient-to-br ${room.color} relative overflow-hidden`}>
-                {/* Decorative pattern */}
                 <div className="absolute inset-0 opacity-30">
                   <svg width="100%" height="100%">
                     <pattern id={`pattern-${i}`} x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -90,7 +115,6 @@ export function RoomShowcase() {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="p-5">
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="text-lg font-semibold text-foreground">{room.name}</h3>

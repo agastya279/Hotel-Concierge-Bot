@@ -5,11 +5,15 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
   {
     q: "Do I need an account to use Aria?",
-    a: "No. Guests can chat with Aria immediately without signing up. However, creating an account lets you save your conversation history and resume chats across devices.",
+    a: "No. Guests can chat with Aria immediately without signing up. However, creating an account lets you save your conversation history, receive a Stay Highlights Recap on departure, and resume chats across devices.",
   },
   {
     q: "What can Aria help me with?",
-    a: "Aria can handle room bookings, dining reservations, spa appointments, airport transfers, local activity recommendations, and general resort questions — all through natural conversation.",
+    a: "Aria can handle room bookings, dining reservations, spa appointments, airport transfers, local activity recommendations, sports facility bookings, and general resort questions — all through natural conversation in over 20 languages.",
+  },
+  {
+    q: "How does the facial recognition check-in work?",
+    a: "At the grand entrance gates, AI Security Kiosks scan your face for frictionless check-in — no queues, no paperwork. The same system provides seamless handoff between services throughout your stay.",
   },
   {
     q: "Is my conversation data private?",
@@ -21,7 +25,15 @@ const faqs = [
   },
   {
     q: "What languages does Aria support?",
-    a: "Aria is fluent in over 20 languages including English, Spanish, French, German, Mandarin, Japanese, Arabic, and Portuguese. It automatically detects your language preference.",
+    a: "Aria is fluent in over 20 languages including English, Spanish, French, German, Mandarin, Japanese, Arabic, Portuguese, Hindi, and Italian. It automatically detects your language preference.",
+  },
+  {
+    q: "What is the AI Karting Track?",
+    a: "Our winding karting track is governed by a reinforcement learning safety agent that predicts collision probabilities milliseconds in advance and wirelessly adjusts individual kart torque to prevent accidents — fun with total safety.",
+  },
+  {
+    q: "How is the resort powered?",
+    a: "SEED Resort operates as a self-sufficient energy island. Our Microgrid combines Solar Parking Canopies and on-site Wind Turbines to deliver 100% renewable energy, with AI Power Routing directing power dynamically based on real-time demand.",
   },
 ];
 
@@ -57,7 +69,7 @@ export function FAQ() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-4 text-muted-foreground"
           >
-            Everything you need to know about Aria.
+            Everything you need to know about Aria and SEED Resort.
           </motion.p>
         </div>
 

@@ -5,26 +5,44 @@ const testimonials = [
   {
     name: "Sarah M.",
     role: "Guest from London",
-    quote: "Aria booked our entire itinerary — spa, dinner reservations, and a sunset boat tour. It felt like having a personal assistant who never sleeps.",
+    quote: "Aria booked our entire itinerary — spa, dinner reservations, and a sunset boat tour. It felt like having a personal assistant who never sleeps. The facial recognition check-in was seamless.",
     rating: 5,
   },
   {
     name: "James & Olivia",
     role: "Honeymoon couple",
-    quote: "We mentioned we loved Italian food and Aria immediately reserved us a table at the waterfront restaurant with the best view. Incredible attention to detail.",
+    quote: "We mentioned we loved Italian food and Aria immediately reserved us a table at the waterfront restaurant with the best view. The mood-adaptive suggestions were incredible — it knew when we needed to relax.",
     rating: 5,
   },
   {
     name: "Michael T.",
     role: "Business traveler",
-    quote: "I needed an airport transfer at 5 AM. Aria arranged it in under 30 seconds and sent me the driver's contact. Seamless experience every time.",
+    quote: "I needed an airport transfer at 5 AM. Aria arranged it in under 30 seconds and sent me the driver's contact. The smart parking even found me an EV charging spot under the solar canopy.",
+    rating: 5,
+  },
+  {
+    name: "The Chen Family",
+    role: "Family of four",
+    quote: "Our kids loved the STEM Zone and the AI Light Show on the waterway every night. Aria planned our whole week — from karting to horseback riding — and everything was perfectly timed.",
+    rating: 5,
+  },
+  {
+    name: "Elena R.",
+    role: "Solo wellness traveler",
+    quote: "The Forest Canopy Room was magical. Aria adjusted my room climate before I even asked, suggested yoga at sunrise, and the spa knew my preferences from our chat history. Pure magic.",
+    rating: 5,
+  },
+  {
+    name: "David & Partners",
+    role: "Corporate retreat",
+    quote: "We hosted a team retreat here. Aria coordinated meeting rooms, catered lunches from the greenhouse farm, and even booked the tennis courts for our afternoon matches. The Digital Twin dashboard was a hit.",
     rating: 5,
   },
 ];
 
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.15 } },
+  show: { transition: { staggerChildren: 0.1 } },
 };
 
 const card = {
@@ -62,7 +80,7 @@ export function Testimonials() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-4 text-muted-foreground max-w-xl mx-auto"
           >
-            Real stories from real stays. See what our guests say about Aria.
+            Real stories from real stays. See what our guests say about Aria and SEED Resort.
           </motion.p>
         </div>
 
@@ -71,7 +89,7 @@ export function Testimonials() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-40px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           style={{ perspective: 1000 }}
         >
           {testimonials.map((t, i) => (
