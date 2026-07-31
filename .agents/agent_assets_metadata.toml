@@ -5,4 +5,10 @@ generated = []
 id = "JhVt6l2NxRpHfC98bCLki"
 uri = "file://seed-resort-netlify-package.zip"
 type = "unspecified"
-title = "SEED Resort Netlify deployment package"
+title = "SEED Resort Netlify package with instructions"
+
+[[outputs]]
+id = "elz0Gvtt8KcHitF3oUW9-"
+uri = "file://seed-resort-netlify-site.zip"
+type = "unspecified"
+title = "SEED Resort Netlify site files"
