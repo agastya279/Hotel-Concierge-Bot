@@ -180,6 +180,7 @@ function Router() {
         <Route path="/chat" component={GuestChatPage} />
         <Route path="/c/:id" component={ChatPage} />
         <Route path="/login" component={LoginPage} />
+        <Route path="/login/*?" component={LoginPage} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/get-started" component={GetStartedPage} />
@@ -222,9 +223,7 @@ function ClerkApp() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <TooltipProvider>
-            <WouterRouter base={basePath}>
-              <Router />
-            </WouterRouter>
+            <Router />
             <Toaster />
           </TooltipProvider>
         </AuthProvider>

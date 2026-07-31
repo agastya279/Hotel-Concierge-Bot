@@ -6,6 +6,10 @@ import guestChatRouter from "./openai/guest-chat";
 
 const router: IRouter = Router();
 
+router.get("/", (_req, res) => {
+  res.json({ status: "ok", service: "api" });
+});
+
 router.use(healthRouter);
 router.use(authRouter);
 router.use("/openai", openaiConversationsRouter);

@@ -24,10 +24,10 @@ export function Footer() {
             © {new Date().getFullYear()} SEED Resort. AI concierge powered by frontier language models.
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <a href="/chat" className="hover:text-foreground transition-colors relative group">
+            <Link href="/chat" className="hover:text-foreground transition-colors relative group">
               Chat
               <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary group-hover:w-full transition-all duration-300" />
-            </a>
+            </Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors relative group">
               Privacy
               <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary group-hover:w-full transition-all duration-300" />
