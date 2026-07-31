@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
+import { runtimeConfig } from "@/lib/runtime-config";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import WelcomePage from "@/pages/welcome";
@@ -32,9 +33,11 @@ const queryClient = new QueryClient({
 
 const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  runtimeConfig.clerkPublishableKey ||
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 );
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const clerkProxyUrl =
+  runtimeConfig.clerkProxyUrl || import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {

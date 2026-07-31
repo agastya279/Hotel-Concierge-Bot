@@ -12,6 +12,7 @@ import {
 } from "@workspace/api-client-react";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { ChatBubble } from "@/components/chat/chat-bubble";
+import { apiFetch } from "@/lib/api-url";
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -48,7 +49,7 @@ export default function ChatPage() {
       titleGeneratedRef.current = true;
       const firstUserMsg = messages.find((m) => m.role === "user");
       if (!firstUserMsg) return;
-      fetch(`/api/openai/conversations/${conversationId}/generate-title`, {
+      apiFetch(`/api/openai/conversations/${conversationId}/generate-title`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -87,7 +88,7 @@ export default function ChatPage() {
     }
     setEditingTitle(false);
     try {
-      await fetch(`/api/openai/conversations/${conversationId}`, {
+      await apiFetch(`/api/openai/conversations/${conversationId}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ title: newTitle }),
       });

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { apiFetch } from "@/lib/api-url";
 
 export interface HistoryMessage {
   role: "user" | "assistant";
@@ -27,7 +28,7 @@ export function useGuestStream() {
     let fullResponse = "";
 
     try {
-      const response = await fetch("/api/openai/guest-chat", {
+      const response = await apiFetch("/api/openai/guest-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, history }),

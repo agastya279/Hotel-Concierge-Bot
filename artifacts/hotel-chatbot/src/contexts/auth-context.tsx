@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useUser, useClerk, useAuth as useClerkAuth } from "@clerk/react";
 import { useLocation } from "wouter";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { setApiAuthTokenGetter } from "@/lib/api-url";
 
 interface AuthContextType {
   user: { id: string; firstName: string | null; email: string | null; profileImageUrl: string | null } | null;
@@ -15,6 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { getToken } = useClerkAuth();
 
   useEffect(() => {
+    setApiAuthTokenGetter(getToken);
     setAuthTokenGetter(async () => {
       try {
         return await getToken();
@@ -22,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
     });
+    return () => setApiAuthTokenGetter(null);
   }, [getToken]);
 
   return <>{children}</>;

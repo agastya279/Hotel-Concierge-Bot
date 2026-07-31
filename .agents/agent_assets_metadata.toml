@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "JhVt6l2NxRpHfC98bCLki"
+uri = "file://seed-resort-netlify-package.zip"
+type = "unspecified"
+title = "SEED Resort Netlify deployment package"
