@@ -65,7 +65,9 @@ export function AriaComposer({
         return;
       }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const preferredMimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"]
+        .find((mimeType) => MediaRecorder.isTypeSupported(mimeType));
+      const mediaRecorder = new MediaRecorder(stream, preferredMimeType ? { mimeType: preferredMimeType } : undefined);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -76,7 +78,7 @@ export function AriaComposer({
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || "audio/webm" });
         stream.getTracks().forEach((track) => track.stop());
         
         try {

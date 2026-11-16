@@ -65,11 +65,11 @@ export interface OpenaiMessage {
   createdAt: string;
 }
 
-export interface CreateOpenaiConversationBody {
+export interface OpenaiConversationInput {
   title: string;
 }
 
-export interface SendOpenaiMessageBody {
+export interface OpenaiMessageInput {
   content: string;
 }
 
@@ -191,8 +191,39 @@ export interface AriaAction {
   createdAt: string;
 }
 
+export type AriaActionUpdateStatus =
+  (typeof AriaActionUpdateStatus)[keyof typeof AriaActionUpdateStatus];
+
+export const AriaActionUpdateStatus = {
+  cancelled: "cancelled",
+} as const;
+
+export interface AriaActionUpdate {
+  status: AriaActionUpdateStatus;
+}
+
+export interface AriaKnowledgeInput {
+  /** @minLength 1 */
+  query: string;
+}
+
+export interface AriaKnowledgeSource {
+  id: string;
+  title: string;
+  source: string;
+}
+
+export interface AriaKnowledgeResponse {
+  answer: string;
+  sources: AriaKnowledgeSource[];
+}
+
 export interface AriaVisionInput {
-  image: Blob;
+  /**
+   * Base64 data URL for a JPEG, PNG, or WebP image.
+   * @maxLength 8000000
+   */
+  imageDataUrl: string;
   prompt?: string;
 }
 
@@ -204,7 +235,8 @@ export interface AriaVisionResponse {
 }
 
 export interface AriaAudioInput {
-  audio: Blob;
+  /** @maxLength 8000000 */
+  audioBase64: string;
   language?: string;
 }
 
@@ -217,6 +249,11 @@ export interface AriaSpeakInput {
   text: string;
   language?: string;
 }
+
+/**
+ * Required for guests; authenticated account ID is used when signed in.
+ */
+export type AriaSessionHeaderParameter = string;
 
 /**
  * Opaque session token — `Bearer <sid>`.

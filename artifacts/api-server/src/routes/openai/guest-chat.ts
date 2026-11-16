@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { buildAriaContextInstructions, getAriaSessionId, loadAriaGuestContext } from "../aria/shared";
-import { formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
+import { ARIA_KNOWLEDGE_DOCUMENTS, formatAriaKnowledgeInstructions } from "../../lib/aria/knowledge-base";
 
 const router: IRouter = Router();
 
@@ -98,7 +98,7 @@ router.post("/guest-chat", async (req, res): Promise<void> => {
       return;
     }
     const context = await loadAriaGuestContext(sessionId);
-    const knowledge = searchAriaKnowledge(content, 5);
+    const knowledge = ARIA_KNOWLEDGE_DOCUMENTS;
 
     const chatHistory: { role: "user" | "assistant"; content: string }[] = history.map((m) => ({
       role: m.role,

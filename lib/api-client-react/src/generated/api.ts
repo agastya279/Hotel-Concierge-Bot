@@ -19,9 +19,12 @@ import type {
 import type {
   AriaAction,
   AriaActionInput,
+  AriaActionUpdate,
   AriaAudioInput,
   AriaContext,
   AriaContextInput,
+  AriaKnowledgeInput,
+  AriaKnowledgeResponse,
   AriaRecommendationsInput,
   AriaRecommendationsResponse,
   AriaSpeakInput,
@@ -30,7 +33,6 @@ import type {
   AriaVisionResponse,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
-  CreateOpenaiConversationBody,
   ErrorEnvelope,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
@@ -38,10 +40,11 @@ import type {
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
   OpenaiConversation,
+  OpenaiConversationInput,
   OpenaiConversationWithMessages,
   OpenaiError,
   OpenaiMessage,
-  SendOpenaiMessageBody,
+  OpenaiMessageInput,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -737,14 +740,14 @@ export const getCreateOpenaiConversationUrl = () => {
 };
 
 export const createOpenaiConversation = async (
-  createOpenaiConversationBody: CreateOpenaiConversationBody,
+  openaiConversationInput: OpenaiConversationInput,
   options?: RequestInit,
 ): Promise<OpenaiConversation> => {
   return customFetch<OpenaiConversation>(getCreateOpenaiConversationUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createOpenaiConversationBody),
+    body: JSON.stringify(openaiConversationInput),
   });
 };
 
@@ -755,14 +758,14 @@ export const getCreateOpenaiConversationMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createOpenaiConversation>>,
     TError,
-    { data: BodyType<CreateOpenaiConversationBody> },
+    { data: BodyType<OpenaiConversationInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createOpenaiConversation>>,
   TError,
-  { data: BodyType<CreateOpenaiConversationBody> },
+  { data: BodyType<OpenaiConversationInput> },
   TContext
 > => {
   const mutationKey = ["createOpenaiConversation"];
@@ -776,7 +779,7 @@ export const getCreateOpenaiConversationMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createOpenaiConversation>>,
-    { data: BodyType<CreateOpenaiConversationBody> }
+    { data: BodyType<OpenaiConversationInput> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -790,7 +793,7 @@ export type CreateOpenaiConversationMutationResult = NonNullable<
   Awaited<ReturnType<typeof createOpenaiConversation>>
 >;
 export type CreateOpenaiConversationMutationBody =
-  BodyType<CreateOpenaiConversationBody>;
+  BodyType<OpenaiConversationInput>;
 export type CreateOpenaiConversationMutationError = ErrorType<unknown>;
 
 /**
@@ -803,14 +806,14 @@ export const useCreateOpenaiConversation = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createOpenaiConversation>>,
     TError,
-    { data: BodyType<CreateOpenaiConversationBody> },
+    { data: BodyType<OpenaiConversationInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof createOpenaiConversation>>,
   TError,
-  { data: BodyType<CreateOpenaiConversationBody> },
+  { data: BodyType<OpenaiConversationInput> },
   TContext
 > => {
   return useMutation(getCreateOpenaiConversationMutationOptions(options));
@@ -1087,14 +1090,14 @@ export const getSendOpenaiMessageUrl = (id: number) => {
 
 export const sendOpenaiMessage = async (
   id: number,
-  sendOpenaiMessageBody: SendOpenaiMessageBody,
+  openaiMessageInput: OpenaiMessageInput,
   options?: RequestInit,
 ): Promise<unknown> => {
   return customFetch<unknown>(getSendOpenaiMessageUrl(id), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(sendOpenaiMessageBody),
+    body: JSON.stringify(openaiMessageInput),
   });
 };
 
@@ -1105,14 +1108,14 @@ export const getSendOpenaiMessageMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof sendOpenaiMessage>>,
     TError,
-    { id: number; data: BodyType<SendOpenaiMessageBody> },
+    { id: number; data: BodyType<OpenaiMessageInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof sendOpenaiMessage>>,
   TError,
-  { id: number; data: BodyType<SendOpenaiMessageBody> },
+  { id: number; data: BodyType<OpenaiMessageInput> },
   TContext
 > => {
   const mutationKey = ["sendOpenaiMessage"];
@@ -1126,7 +1129,7 @@ export const getSendOpenaiMessageMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof sendOpenaiMessage>>,
-    { id: number; data: BodyType<SendOpenaiMessageBody> }
+    { id: number; data: BodyType<OpenaiMessageInput> }
   > = (props) => {
     const { id, data } = props ?? {};
 
@@ -1139,7 +1142,7 @@ export const getSendOpenaiMessageMutationOptions = <
 export type SendOpenaiMessageMutationResult = NonNullable<
   Awaited<ReturnType<typeof sendOpenaiMessage>>
 >;
-export type SendOpenaiMessageMutationBody = BodyType<SendOpenaiMessageBody>;
+export type SendOpenaiMessageMutationBody = BodyType<OpenaiMessageInput>;
 export type SendOpenaiMessageMutationError = ErrorType<unknown>;
 
 /**
@@ -1152,14 +1155,14 @@ export const useSendOpenaiMessage = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof sendOpenaiMessage>>,
     TError,
-    { id: number; data: BodyType<SendOpenaiMessageBody> },
+    { id: number; data: BodyType<OpenaiMessageInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof sendOpenaiMessage>>,
   TError,
-  { id: number; data: BodyType<SendOpenaiMessageBody> },
+  { id: number; data: BodyType<OpenaiMessageInput> },
   TContext
 > => {
   return useMutation(getSendOpenaiMessageMutationOptions(options));
@@ -1578,6 +1581,179 @@ export const useCreateAriaAction = <
 };
 
 /**
+ * @summary Cancel a pending guest request
+ */
+export const getUpdateAriaActionUrl = (id: number) => {
+  return `/api/aria/actions/${id}`;
+};
+
+export const updateAriaAction = async (
+  id: number,
+  ariaActionUpdate: AriaActionUpdate,
+  options?: RequestInit,
+): Promise<AriaAction> => {
+  return customFetch<AriaAction>(getUpdateAriaActionUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaActionUpdate),
+  });
+};
+
+export const getUpdateAriaActionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAriaAction>>,
+    TError,
+    { id: number; data: BodyType<AriaActionUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAriaAction>>,
+  TError,
+  { id: number; data: BodyType<AriaActionUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateAriaAction"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAriaAction>>,
+    { id: number; data: BodyType<AriaActionUpdate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateAriaAction(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAriaActionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAriaAction>>
+>;
+export type UpdateAriaActionMutationBody = BodyType<AriaActionUpdate>;
+export type UpdateAriaActionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Cancel a pending guest request
+ */
+export const useUpdateAriaAction = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAriaAction>>,
+    TError,
+    { id: number; data: BodyType<AriaActionUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateAriaAction>>,
+  TError,
+  { id: number; data: BodyType<AriaActionUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateAriaActionMutationOptions(options));
+};
+
+/**
+ * @summary Search verified resort guest information
+ */
+export const getSearchAriaKnowledgeUrl = () => {
+  return `/api/aria/knowledge/search`;
+};
+
+export const searchAriaKnowledge = async (
+  ariaKnowledgeInput: AriaKnowledgeInput,
+  options?: RequestInit,
+): Promise<AriaKnowledgeResponse> => {
+  return customFetch<AriaKnowledgeResponse>(getSearchAriaKnowledgeUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaKnowledgeInput),
+  });
+};
+
+export const getSearchAriaKnowledgeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchAriaKnowledge>>,
+    TError,
+    { data: BodyType<AriaKnowledgeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof searchAriaKnowledge>>,
+  TError,
+  { data: BodyType<AriaKnowledgeInput> },
+  TContext
+> => {
+  const mutationKey = ["searchAriaKnowledge"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof searchAriaKnowledge>>,
+    { data: BodyType<AriaKnowledgeInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return searchAriaKnowledge(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SearchAriaKnowledgeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof searchAriaKnowledge>>
+>;
+export type SearchAriaKnowledgeMutationBody = BodyType<AriaKnowledgeInput>;
+export type SearchAriaKnowledgeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Search verified resort guest information
+ */
+export const useSearchAriaKnowledge = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchAriaKnowledge>>,
+    TError,
+    { data: BodyType<AriaKnowledgeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof searchAriaKnowledge>>,
+  TError,
+  { data: BodyType<AriaKnowledgeInput> },
+  TContext
+> => {
+  return useMutation(getSearchAriaKnowledgeMutationOptions(options));
+};
+
+/**
  * @summary Analyze an uploaded image for resort assistance
  */
 export const getAnalyzeAriaImageUrl = () => {
@@ -1588,16 +1764,11 @@ export const analyzeAriaImage = async (
   ariaVisionInput: AriaVisionInput,
   options?: RequestInit,
 ): Promise<AriaVisionResponse> => {
-  const formData = new FormData();
-  formData.append(`image`, ariaVisionInput.image);
-  if (ariaVisionInput.prompt !== undefined) {
-    formData.append(`prompt`, ariaVisionInput.prompt);
-  }
-
   return customFetch<AriaVisionResponse>(getAnalyzeAriaImageUrl(), {
     ...options,
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaVisionInput),
   });
 };
 
@@ -1679,16 +1850,11 @@ export const transcribeAriaAudio = async (
   ariaAudioInput: AriaAudioInput,
   options?: RequestInit,
 ): Promise<AriaTranscription> => {
-  const formData = new FormData();
-  formData.append(`audio`, ariaAudioInput.audio);
-  if (ariaAudioInput.language !== undefined) {
-    formData.append(`language`, ariaAudioInput.language);
-  }
-
   return customFetch<AriaTranscription>(getTranscribeAriaAudioUrl(), {
     ...options,
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaAudioInput),
   });
 };
 

@@ -179,6 +179,15 @@ export const SendOpenaiMessageBody = zod.object({
 /**
  * @summary Get the guest's saved concierge context
  */
+export const GetAriaContextHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
 export const GetAriaContextResponse = zod.object({
   language: zod.string(),
   preferences: zod.array(zod.string()),
@@ -191,6 +200,15 @@ export const GetAriaContextResponse = zod.object({
 /**
  * @summary Save guest preferences and language context
  */
+export const UpdateAriaContextHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
 export const UpdateAriaContextBody = zod.object({
   language: zod.string().optional(),
   preferences: zod.array(zod.string()).optional(),
@@ -212,6 +230,14 @@ export const UpdateAriaContextResponse = zod.object({
 /**
  * @summary Generate personalized resort recommendations or an itinerary
  */
+export const CreateAriaRecommendationsHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
 
 export const createAriaRecommendationsBodyDaysMax = 14;
 
@@ -252,6 +278,15 @@ export const CreateAriaRecommendationsResponse = zod.object({
 /**
  * @summary List guest action requests
  */
+export const ListAriaActionsHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
 export const ListAriaActionsResponseItem = zod.object({
   id: zod.number(),
   type: zod.string(),
@@ -272,6 +307,15 @@ export const ListAriaActionsResponse = zod.array(ListAriaActionsResponseItem);
 /**
  * @summary Create a reservation or concierge action request
  */
+export const CreateAriaActionHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
 export const CreateAriaActionBody = zod.object({
   type: zod.enum([
     "reservation",
@@ -288,10 +332,79 @@ export const CreateAriaActionBody = zod.object({
 });
 
 /**
+ * @summary Cancel a pending guest request
+ */
+export const UpdateAriaActionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateAriaActionHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
+export const UpdateAriaActionBody = zod.object({
+  status: zod.enum(["cancelled"]),
+});
+
+export const UpdateAriaActionResponse = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  details: zod.string(),
+  preferredTime: zod.string().nullish(),
+  status: zod.enum([
+    "requested",
+    "confirmed",
+    "in-progress",
+    "completed",
+    "cancelled",
+  ]),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Search verified resort guest information
+ */
+
+export const SearchAriaKnowledgeBody = zod.object({
+  query: zod.string().min(1),
+});
+
+export const SearchAriaKnowledgeResponse = zod.object({
+  answer: zod.string(),
+  sources: zod.array(
+    zod.object({
+      id: zod.string(),
+      title: zod.string(),
+      source: zod.string(),
+    }),
+  ),
+});
+
+/**
  * @summary Analyze an uploaded image for resort assistance
  */
+export const AnalyzeAriaImageHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
+export const analyzeAriaImageBodyImageDataUrlMax = 8000000;
+
 export const AnalyzeAriaImageBody = zod.object({
-  image: zod.instanceof(File),
+  imageDataUrl: zod
+    .string()
+    .max(analyzeAriaImageBodyImageDataUrlMax)
+    .describe("Base64 data URL for a JPEG, PNG, or WebP image."),
   prompt: zod.string().optional(),
 });
 
@@ -304,8 +417,19 @@ export const AnalyzeAriaImageResponse = zod.object({
 /**
  * @summary Transcribe a guest voice message
  */
+export const TranscribeAriaAudioHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
+export const transcribeAriaAudioBodyAudioBase64Max = 8000000;
+
 export const TranscribeAriaAudioBody = zod.object({
-  audio: zod.instanceof(File),
+  audioBase64: zod.string().max(transcribeAriaAudioBodyAudioBase64Max),
   language: zod.string().optional(),
 });
 
@@ -317,6 +441,15 @@ export const TranscribeAriaAudioResponse = zod.object({
 /**
  * @summary Turn Aria's response into speech
  */
+export const SynthesizeAriaSpeechHeader = zod.object({
+  "x-session-id": zod
+    .string()
+    .optional()
+    .describe(
+      "Required for guests; authenticated account ID is used when signed in.",
+    ),
+});
+
 export const SynthesizeAriaSpeechBody = zod.object({
   text: zod.string(),
   language: zod.string().optional(),

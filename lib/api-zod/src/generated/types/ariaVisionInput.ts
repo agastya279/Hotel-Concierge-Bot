@@ -7,6 +7,10 @@
  */
 
 export interface AriaVisionInput {
-  image: Blob;
+  /**
+   * Base64 data URL for a JPEG, PNG, or WebP image.
+   * @maxLength 8000000
+   */
+  imageDataUrl: string;
   prompt?: string;
 }

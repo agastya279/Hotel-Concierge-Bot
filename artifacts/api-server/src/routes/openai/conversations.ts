@@ -11,7 +11,7 @@ import {
   SendOpenaiMessageBody,
 } from "@workspace/api-zod";
 import { buildAriaContextInstructions, loadAriaGuestContext } from "../aria/shared";
-import { formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
+import { ARIA_KNOWLEDGE_DOCUMENTS, formatAriaKnowledgeInstructions } from "../../lib/aria/knowledge-base";
 
 const router: IRouter = Router();
 
@@ -209,7 +209,7 @@ router.post("/conversations/:id/messages", async (req, res) => {
     }));
     chatHistory.push({ role: "user", content: body.content });
     const context = await loadAriaGuestContext(userId);
-    const knowledge = searchAriaKnowledge(body.content, 5);
+    const knowledge = ARIA_KNOWLEDGE_DOCUMENTS;
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");

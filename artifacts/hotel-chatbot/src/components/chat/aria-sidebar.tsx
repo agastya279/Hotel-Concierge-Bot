@@ -7,12 +7,14 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Settings2, Globe, Heart, Clock, Utensils, Star, Wine, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { Settings2, Globe, Heart, Clock, Utensils, Star, Wine, CheckCircle2, Circle, AlertCircle, Plus, X, Loader2 } from "lucide-react";
 import { 
   useAriaContext, 
   useUpdateAriaContext, 
   useAriaActions, 
-  useAriaRecommendations 
+  useAriaRecommendations,
+  useCreateAriaAction,
+  useCancelAriaAction,
 } from "@/hooks/use-aria";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,13 +30,38 @@ const PREFERENCE_OPTIONS = [
   { id: "wine_enthusiast", label: "Wine Enthusiast", icon: Wine },
 ];
 
+const LANGUAGES = [
+  { value: "auto", label: "Detect automatically" },
+  { value: "english", label: "English" },
+  { value: "arabic", label: "Arabic" },
+  { value: "chinese", label: "Chinese" },
+  { value: "dutch", label: "Dutch" },
+  { value: "french", label: "French" },
+  { value: "german", label: "German" },
+  { value: "hindi", label: "Hindi" },
+  { value: "italian", label: "Italian" },
+  { value: "japanese", label: "Japanese" },
+  { value: "korean", label: "Korean" },
+  { value: "mandarin", label: "Mandarin Chinese" },
+  { value: "portuguese", label: "Portuguese" },
+  { value: "russian", label: "Russian" },
+  { value: "spanish", label: "Spanish" },
+  { value: "turkish", label: "Turkish" },
+];
+
 export function AriaSidebar({ conversationId }: { conversationId?: number }) {
   const [open, setOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [requestType, setRequestType] = useState("human-concierge");
+  const [requestDetails, setRequestDetails] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
   const { data: context, isLoading: isContextLoading } = useAriaContext(conversationId);
   const { data: actions, isLoading: isActionsLoading } = useAriaActions(conversationId);
   const updateContext = useUpdateAriaContext();
   const getRecommendations = useAriaRecommendations();
+  const createAction = useCreateAriaAction();
+  const cancelAction = useCancelAriaAction();
   const { toast } = useToast();
 
   const handleTogglePreference = async (prefId: string) => {
@@ -69,17 +96,49 @@ export function AriaSidebar({ conversationId }: { conversationId?: number }) {
     try {
       const res = await getRecommendations.mutateAsync({ 
         conversationId, 
-        query: "Suggest an itinerary for today based on my preferences",
+        request: "Suggest a resort itinerary based on my preferences. Do not assume live availability or opening hours.",
         preferences: context?.preferences
       });
-      if (res.recommendations) {
-        setRecommendations(res.recommendations);
+      const items = Array.isArray(res.items) ? res.items : res.recommendations;
+      if (Array.isArray(items)) {
+        setRecommendations(items);
         toast({ title: "Recommendations loaded" });
       } else {
-        toast({ title: "Aria is preparing your recommendations..." });
+        toast({ title: "No recommendations were returned" });
       }
     } catch (err) {
       toast({ title: "Failed to get recommendations", variant: "destructive" });
+    }
+  };
+
+  const handleCreateRequest = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!requestDetails.trim()) return;
+    try {
+      const action = await createAction.mutateAsync({
+        type: requestType,
+        title: requestDetails.trim().split("\n")[0].slice(0, 120) || "Concierge request",
+        details: requestDetails.trim(),
+        preferredTime: preferredTime || null,
+      });
+      setRequestDetails("");
+      setPreferredTime("");
+      setShowRequestForm(false);
+      toast({
+        title: "Request sent to the concierge",
+        description: `${action.title} is awaiting staff confirmation.`,
+      });
+    } catch {
+      toast({ title: "Could not send the request", variant: "destructive" });
+    }
+  };
+
+  const handleCancelRequest = async (id: number) => {
+    try {
+      await cancelAction.mutateAsync(id);
+      toast({ title: "Request cancelled" });
+    } catch {
+      toast({ title: "This request can no longer be cancelled", variant: "destructive" });
     }
   };
 
@@ -112,16 +171,14 @@ export function AriaSidebar({ conversationId }: { conversationId?: number }) {
               {isContextLoading ? (
                 <Skeleton className="h-10 w-full rounded-lg" />
               ) : (
-                <Select value={context?.language || "english"} onValueChange={handleLanguageChange}>
+                <Select value={context?.language || "auto"} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full bg-white/50">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="english">English</SelectItem>
-                    <SelectItem value="french">French</SelectItem>
-                    <SelectItem value="spanish">Spanish</SelectItem>
-                    <SelectItem value="japanese">Japanese</SelectItem>
-                    <SelectItem value="mandarin">Mandarin</SelectItem>
+                    {LANGUAGES.map((language) => (
+                      <SelectItem key={language.value} value={language.value}>{language.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
@@ -180,13 +237,14 @@ export function AriaSidebar({ conversationId }: { conversationId?: number }) {
                     <div key={i} className="flex flex-col gap-2 p-3 rounded-xl border border-border/40 bg-white/60 shadow-sm">
                       <div className="flex justify-between items-start gap-2">
                         <h4 className="font-semibold text-sm text-foreground">{rec.title}</h4>
-                        {rec.type && (
+                        {(rec.category || rec.type) && (
                           <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary uppercase font-bold tracking-wider">
-                            {rec.type}
+                            {rec.category || rec.type}
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">{rec.description}</p>
+                      {rec.timing && <p className="text-[11px] text-muted-foreground/80">{rec.timing}</p>}
                     </div>
                   ))}
                 </div>
@@ -202,11 +260,75 @@ export function AriaSidebar({ conversationId }: { conversationId?: number }) {
               <Button 
                 onClick={handleQuickRecommendation} 
                 variant="outline" 
+                disabled={getRecommendations.isPending}
                 className="w-full justify-start text-left font-normal bg-white/50 hover:bg-white border-border/50"
               >
-                <Utensils className="w-4 h-4 mr-2 text-muted-foreground" />
-                Curate a daily itinerary
+                {getRecommendations.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Utensils className="w-4 h-4 mr-2 text-muted-foreground" />}
+                Curate a resort itinerary
               </Button>
+            </section>
+
+            {/* Concierge requests */}
+            <section className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground uppercase tracking-wider">
+                <Plus className="w-4 h-4 text-muted-foreground" />
+                <h3>Send a request</h3>
+              </div>
+              {!showRequestForm ? (
+                <Button
+                  type="button"
+                  onClick={() => setShowRequestForm(true)}
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal bg-white/50 hover:bg-white border-border/50"
+                >
+                  <Plus className="w-4 h-4 mr-2 text-muted-foreground" />
+                  Ask the concierge to arrange something
+                </Button>
+              ) : (
+                <form onSubmit={handleCreateRequest} className="space-y-3 rounded-xl border border-border/50 bg-white/60 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-foreground">What do you need?</p>
+                    <button type="button" onClick={() => setShowRequestForm(false)} aria-label="Close request form" className="p-1 rounded hover:bg-muted">
+                      <X className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                  <Select value={requestType} onValueChange={setRequestType}>
+                    <SelectTrigger aria-label="Request type" className="bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="human-concierge">General concierge request</SelectItem>
+                      <SelectItem value="reservation">Room reservation</SelectItem>
+                      <SelectItem value="dining">Dining reservation</SelectItem>
+                      <SelectItem value="spa">Spa appointment</SelectItem>
+                      <SelectItem value="room-service">Room service</SelectItem>
+                      <SelectItem value="transport">Transport</SelectItem>
+                      <SelectItem value="activity">Activity booking</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <textarea
+                    required
+                    value={requestDetails}
+                    onChange={(event) => setRequestDetails(event.target.value)}
+                    maxLength={2000}
+                    rows={3}
+                    placeholder="Add the details Aria should pass to the team."
+                    className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <input
+                    type="datetime-local"
+                    value={preferredTime}
+                    onChange={(event) => setPreferredTime(event.target.value)}
+                    aria-label="Preferred date and time"
+                    className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-muted-foreground"
+                  />
+                  <p className="text-[11px] text-muted-foreground">Requests are not confirmed until resort staff respond.</p>
+                  <Button type="submit" disabled={!requestDetails.trim() || createAction.isPending} className="w-full">
+                    {createAction.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Send request
+                  </Button>
+                </form>
+              )}
             </section>
 
             {/* Active Requests */}
@@ -226,23 +348,34 @@ export function AriaSidebar({ conversationId }: { conversationId?: number }) {
                   {actions.map((action) => (
                     <div key={action.id} className="flex items-start gap-3 p-3 rounded-xl border border-border/40 bg-white/40 shadow-sm">
                       <div className="mt-0.5">
-                        {action.status === 'confirmed' ? (
+                        {action.status === 'confirmed' || action.status === 'completed' ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        ) : action.status === 'failed' ? (
+                        ) : action.status === 'cancelled' ? (
                           <AlertCircle className="w-4 h-4 text-destructive" />
                         ) : (
                           <Circle className="w-4 h-4 text-blue-500 animate-pulse" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground capitalize tracking-wide">{action.type.replace(/_/g, ' ')}</p>
+                        <p className="text-sm font-medium text-foreground tracking-wide">{action.title}</p>
                         <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {JSON.stringify(action.payload)}
+                          {action.details}
                         </p>
                         <span className="text-[10px] text-muted-foreground/60 mt-1.5 block">
-                          {new Date(action.createdAt).toLocaleTimeString()}
+                          {action.status === "requested" ? "Awaiting staff confirmation" : action.status.replace(/-/g, " ")}
+                          {" · "}{new Date(action.createdAt).toLocaleString()}
                         </span>
                       </div>
+                      {action.status === "requested" && (
+                        <button
+                          type="button"
+                          onClick={() => handleCancelRequest(action.id)}
+                          disabled={cancelAction.isPending}
+                          className="text-[11px] text-muted-foreground hover:text-destructive disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

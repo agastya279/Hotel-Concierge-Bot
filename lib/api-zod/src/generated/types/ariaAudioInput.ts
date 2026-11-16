@@ -7,6 +7,7 @@
  */
 
 export interface AriaAudioInput {
-  audio: Blob;
+  /** @maxLength 8000000 */
+  audioBase64: string;
   language?: string;
 }

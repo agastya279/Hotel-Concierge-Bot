@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { speechToText, textToSpeech } from "@workspace/integrations-openai-ai-server/audio";
+import { ensureCompatibleFormat, speechToText, textToSpeech } from "@workspace/integrations-openai-ai-server/audio";
 
 const router: IRouter = Router();
 router.post("/transcribe", async (req, res): Promise<void> => {
@@ -10,8 +10,11 @@ router.post("/transcribe", async (req, res): Promise<void> => {
       return;
     }
     const language = typeof req.body?.language === "string" ? req.body.language : "auto";
-    const text = await speechToText(Buffer.from(audioBase64, "base64"), "webm");
-    res.json({ text, transcript: text, language });
+    const audioBuffer = Buffer.from(audioBase64, "base64");
+    if (!audioBuffer.length) { res.status(400).json({ error: "Audio recording is empty" }); return; }
+    const compatibleAudio = await ensureCompatibleFormat(audioBuffer);
+    const text = await speechToText(compatibleAudio.buffer, compatibleAudio.format);
+    res.json({ text, language });
   } catch (err) {
     req.log.error({ err }, "Failed to transcribe audio");
     res.status(500).json({ error: "Audio transcription failed" });

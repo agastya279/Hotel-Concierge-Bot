@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { apiFetch } from "@/lib/api-url";
+import { getSessionId } from "@/lib/session";
 
 export interface HistoryMessage {
   role: "user" | "assistant";
@@ -30,7 +31,7 @@ export function useGuestStream() {
     try {
       const response = await apiFetch("/api/openai/guest-chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-session-id": getSessionId() },
         body: JSON.stringify({ content, history }),
         signal: controller.signal,
       });

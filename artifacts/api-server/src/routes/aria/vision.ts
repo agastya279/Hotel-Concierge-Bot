@@ -26,7 +26,7 @@ router.post("/vision", async (req, res): Promise<void> => {
       }],
     });
     const summary = completion.choices[0]?.message?.content ?? "";
-    res.json({ summary, text: summary, suggestions: [], detectedLanguage: null });
+    res.json({ summary, suggestions: [], detectedLanguage: null });
   } catch (err) {
     req.log.error({ err }, "Failed to analyze image");
     res.status(500).json({ error: "Image analysis failed" });

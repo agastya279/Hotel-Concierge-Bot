@@ -167,7 +167,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateOpenaiConversationBody"
+              $ref: "#/components/schemas/OpenaiConversationInput"
       responses:
         "201":
           description: Created conversation
@@ -253,7 +253,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SendOpenaiMessageBody"
+              $ref: "#/components/schemas/OpenaiMessageInput"
       responses:
         "200":
           description: SSE stream of assistant text chunks
@@ -264,6 +264,8 @@ paths:
       operationId: getAriaContext
       tags: [aria]
       summary: Get the guest's saved concierge context
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       responses:
         "200":
           description: Saved guest preferences and language context
@@ -275,6 +277,8 @@ paths:
       operationId: updateAriaContext
       tags: [aria]
       summary: Save guest preferences and language context
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       requestBody:
         required: true
         content:
@@ -293,6 +297,8 @@ paths:
       operationId: createAriaRecommendations
       tags: [aria]
       summary: Generate personalized resort recommendations or an itinerary
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       requestBody:
         required: true
         content:
@@ -311,6 +317,8 @@ paths:
       operationId: listAriaActions
       tags: [aria]
       summary: List guest action requests
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       responses:
         "200":
           description: Guest action requests
@@ -324,6 +332,8 @@ paths:
       operationId: createAriaAction
       tags: [aria]
       summary: Create a reservation or concierge action request
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       requestBody:
         required: true
         content:
@@ -337,15 +347,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AriaAction"
+  /aria/actions/{id}:
+    patch:
+      operationId: updateAriaAction
+      tags: [aria]
+      summary: Cancel a pending guest request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: "#/components/parameters/AriaSessionHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AriaActionUpdate"
+      responses:
+        "200":
+          description: Updated guest request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaAction"
+  /aria/knowledge/search:
+    post:
+      operationId: searchAriaKnowledge
+      tags: [aria]
+      summary: Search verified resort guest information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AriaKnowledgeInput"
+      responses:
+        "200":
+          description: Grounded answer and matching resort sources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaKnowledgeResponse"
   /aria/vision:
     post:
       operationId: analyzeAriaImage
       tags: [aria]
       summary: Analyze an uploaded image for resort assistance
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: "#/components/schemas/AriaVisionInput"
       responses:
@@ -360,10 +415,12 @@ paths:
       operationId: transcribeAriaAudio
       tags: [aria]
       summary: Transcribe a guest voice message
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: "#/components/schemas/AriaAudioInput"
       responses:
@@ -378,6 +435,8 @@ paths:
       operationId: synthesizeAriaSpeech
       tags: [aria]
       summary: Turn Aria's response into speech
+      parameters:
+        - $ref: "#/components/parameters/AriaSessionHeader"
       requestBody:
         required: true
         content:
@@ -394,6 +453,13 @@ paths:
                 format: binary
 components:
   parameters:
+    AriaSessionHeader:
+      name: x-session-id
+      in: header
+      required: false
+      description: Required for guests; authenticated account ID is used when signed in.
+      schema:
+        type: string
     AuthorizationSessionHeader:
       name: Authorization
       in: header
@@ -512,14 +578,14 @@ components:
         - role
         - content
         - createdAt
-    CreateOpenaiConversationBody:
+    OpenaiConversationInput:
       type: object
       properties:
         title:
           type: string
       required:
         - title
-    SendOpenaiMessageBody:
+    OpenaiMessageInput:
       type: object
       properties:
         content:
@@ -636,13 +702,44 @@ components:
         createdAt:
           type: string
           format: date-time
+    AriaActionUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [cancelled]
+    AriaKnowledgeInput:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          minLength: 1
+    AriaKnowledgeSource:
+      type: object
+      required: [id, title, source]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        source: { type: string }
+    AriaKnowledgeResponse:
+      type: object
+      required: [answer, sources]
+      properties:
+        answer: { type: string }
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/AriaKnowledgeSource"
     AriaVisionInput:
       type: object
-      required: [image]
+      required: [imageDataUrl]
       properties:
-        image:
+        imageDataUrl:
           type: string
-          format: binary
+          maxLength: 8000000
+          description: Base64 data URL for a JPEG, PNG, or WebP image.
         prompt: { type: string }
     AriaVisionResponse:
       type: object
@@ -655,11 +752,11 @@ components:
         detectedLanguage: { type: [string, "null"] }
     AriaAudioInput:
       type: object
-      required: [audio]
+      required: [audioBase64]
       properties:
-        audio:
+        audioBase64:
           type: string
-          format: binary
+          maxLength: 8000000
         language: { type: string }
     AriaTranscription:
       type: object
