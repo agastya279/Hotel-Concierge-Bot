@@ -5,11 +5,11 @@ import { AnimatedLogo, LogoBadge } from "@/components/ui/animated-logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  useListOpenaiConversations,
   useCreateOpenaiConversation,
   useDeleteOpenaiConversation,
-  getListOpenaiConversationsQueryKey
 } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-url";
 import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -43,8 +43,14 @@ export function Sidebar() {
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading: isAuthLoading, user, login, logout } = useAuthContext();
 
-  const { data: conversations = [], isLoading } = useListOpenaiConversations({
-    query: { enabled: isAuthenticated },
+  const { data: conversations = [], isLoading } = useQuery<any[]>({
+    queryKey: ["conversations"],
+    queryFn: async () => {
+      const res = await apiFetch(`/api/openai/conversations`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    enabled: isAuthenticated,
   });
   const { mutate: createConv, isPending: isCreating } = useCreateOpenaiConversation();
   const { mutate: deleteConv } = useDeleteOpenaiConversation();
@@ -64,8 +70,8 @@ export function Sidebar() {
     createConv(
       { data: { title: "New Conversation" } },
       {
-        onSuccess: (newConv) => {
-          queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+        onSuccess: (newConv: any) => {
+          queryClient.invalidateQueries({ queryKey: ["conversations"] });
           setLocation(`/c/${newConv.id}`);
           setIsOpen(false);
         }
@@ -77,7 +83,7 @@ export function Sidebar() {
     e.preventDefault(); e.stopPropagation();
     deleteConv({ id }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
         if (location === `/c/${id}`) setLocation("/");
       }
     });

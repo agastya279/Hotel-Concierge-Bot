@@ -115,7 +115,7 @@ export function FeatureGrid() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {features.map((f) => (
-            <motion.div key={f.title} variants={item}>
+            <motion.div key={f.title} variants={item as any}>
               <TiltCard className="group p-6 rounded-2xl bg-white border border-border/60 hover:border-primary/30 hover:shadow-lg transition-all duration-300 h-full cursor-default">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
                   <f.icon className="w-5 h-5 text-primary" />

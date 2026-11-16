@@ -259,6 +259,139 @@ paths:
           description: SSE stream of assistant text chunks
           content:
             text/event-stream: {}
+  /aria/context:
+    get:
+      operationId: getAriaContext
+      tags: [aria]
+      summary: Get the guest's saved concierge context
+      responses:
+        "200":
+          description: Saved guest preferences and language context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaContext"
+    put:
+      operationId: updateAriaContext
+      tags: [aria]
+      summary: Save guest preferences and language context
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AriaContextInput"
+      responses:
+        "200":
+          description: Updated concierge context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaContext"
+  /aria/recommendations:
+    post:
+      operationId: createAriaRecommendations
+      tags: [aria]
+      summary: Generate personalized resort recommendations or an itinerary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AriaRecommendationsInput"
+      responses:
+        "200":
+          description: Personalized recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaRecommendationsResponse"
+  /aria/actions:
+    get:
+      operationId: listAriaActions
+      tags: [aria]
+      summary: List guest action requests
+      responses:
+        "200":
+          description: Guest action requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AriaAction"
+    post:
+      operationId: createAriaAction
+      tags: [aria]
+      summary: Create a reservation or concierge action request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AriaActionInput"
+      responses:
+        "201":
+          description: Action request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaAction"
+  /aria/vision:
+    post:
+      operationId: analyzeAriaImage
+      tags: [aria]
+      summary: Analyze an uploaded image for resort assistance
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AriaVisionInput"
+      responses:
+        "200":
+          description: Image analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaVisionResponse"
+  /aria/transcribe:
+    post:
+      operationId: transcribeAriaAudio
+      tags: [aria]
+      summary: Transcribe a guest voice message
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AriaAudioInput"
+      responses:
+        "200":
+          description: Transcribed voice message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AriaTranscription"
+  /aria/speak:
+    post:
+      operationId: synthesizeAriaSpeech
+      tags: [aria]
+      summary: Turn Aria's response into speech
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AriaSpeakInput"
+      responses:
+        "200":
+          description: Audio response
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -419,3 +552,124 @@ components:
           type: string
       required:
         - error
+    AriaContext:
+      type: object
+      required: [language, preferences, interests, travelParty]
+      properties:
+        language:
+          type: string
+        preferences:
+          type: array
+          items: { type: string }
+        interests:
+          type: array
+          items: { type: string }
+        dietaryNeeds:
+          type: [string, "null"]
+        travelParty:
+          type: [string, "null"]
+        stayDates:
+          type: [string, "null"]
+    AriaContextInput:
+      type: object
+      properties:
+        language: { type: string }
+        preferences:
+          type: array
+          items: { type: string }
+        interests:
+          type: array
+          items: { type: string }
+        dietaryNeeds: { type: [string, "null"] }
+        travelParty: { type: [string, "null"] }
+        stayDates: { type: [string, "null"] }
+    AriaRecommendationsInput:
+      type: object
+      required: [request]
+      properties:
+        request: { type: string, minLength: 1 }
+        category:
+          type: string
+          enum: [dining, rooms, wellness, sports, family, itinerary, local]
+        days: { type: integer, minimum: 1, maximum: 14 }
+    AriaRecommendation:
+      type: object
+      required: [title, description, category]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        category: { type: string }
+        timing: { type: [string, "null"] }
+        actionType: { type: [string, "null"] }
+    AriaRecommendationsResponse:
+      type: object
+      required: [title, summary, items]
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AriaRecommendation"
+    AriaActionInput:
+      type: object
+      required: [type, title, details]
+      properties:
+        type:
+          type: string
+          enum: [reservation, room-service, spa, dining, transport, activity, human-concierge]
+        title: { type: string }
+        details: { type: string }
+        preferredTime: { type: [string, "null"] }
+    AriaAction:
+      type: object
+      required: [id, type, title, details, status, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        details: { type: string }
+        preferredTime: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [requested, confirmed, in-progress, completed, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+    AriaVisionInput:
+      type: object
+      required: [image]
+      properties:
+        image:
+          type: string
+          format: binary
+        prompt: { type: string }
+    AriaVisionResponse:
+      type: object
+      required: [summary, suggestions]
+      properties:
+        summary: { type: string }
+        suggestions:
+          type: array
+          items: { type: string }
+        detectedLanguage: { type: [string, "null"] }
+    AriaAudioInput:
+      type: object
+      required: [audio]
+      properties:
+        audio:
+          type: string
+          format: binary
+        language: { type: string }
+    AriaTranscription:
+      type: object
+      required: [text, language]
+      properties:
+        text: { type: string }
+        language: { type: string }
+    AriaSpeakInput:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string }
+        language: { type: string }

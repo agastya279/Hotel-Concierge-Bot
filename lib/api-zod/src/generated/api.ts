@@ -175,3 +175,149 @@ export const SendOpenaiMessageParams = zod.object({
 export const SendOpenaiMessageBody = zod.object({
   content: zod.string(),
 });
+
+/**
+ * @summary Get the guest's saved concierge context
+ */
+export const GetAriaContextResponse = zod.object({
+  language: zod.string(),
+  preferences: zod.array(zod.string()),
+  interests: zod.array(zod.string()),
+  dietaryNeeds: zod.string().nullish(),
+  travelParty: zod.string().nullable(),
+  stayDates: zod.string().nullish(),
+});
+
+/**
+ * @summary Save guest preferences and language context
+ */
+export const UpdateAriaContextBody = zod.object({
+  language: zod.string().optional(),
+  preferences: zod.array(zod.string()).optional(),
+  interests: zod.array(zod.string()).optional(),
+  dietaryNeeds: zod.string().nullish(),
+  travelParty: zod.string().nullish(),
+  stayDates: zod.string().nullish(),
+});
+
+export const UpdateAriaContextResponse = zod.object({
+  language: zod.string(),
+  preferences: zod.array(zod.string()),
+  interests: zod.array(zod.string()),
+  dietaryNeeds: zod.string().nullish(),
+  travelParty: zod.string().nullable(),
+  stayDates: zod.string().nullish(),
+});
+
+/**
+ * @summary Generate personalized resort recommendations or an itinerary
+ */
+
+export const createAriaRecommendationsBodyDaysMax = 14;
+
+export const CreateAriaRecommendationsBody = zod.object({
+  request: zod.string().min(1),
+  category: zod
+    .enum([
+      "dining",
+      "rooms",
+      "wellness",
+      "sports",
+      "family",
+      "itinerary",
+      "local",
+    ])
+    .optional(),
+  days: zod
+    .number()
+    .min(1)
+    .max(createAriaRecommendationsBodyDaysMax)
+    .optional(),
+});
+
+export const CreateAriaRecommendationsResponse = zod.object({
+  title: zod.string(),
+  summary: zod.string(),
+  items: zod.array(
+    zod.object({
+      title: zod.string(),
+      description: zod.string(),
+      category: zod.string(),
+      timing: zod.string().nullish(),
+      actionType: zod.string().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary List guest action requests
+ */
+export const ListAriaActionsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  details: zod.string(),
+  preferredTime: zod.string().nullish(),
+  status: zod.enum([
+    "requested",
+    "confirmed",
+    "in-progress",
+    "completed",
+    "cancelled",
+  ]),
+  createdAt: zod.date(),
+});
+export const ListAriaActionsResponse = zod.array(ListAriaActionsResponseItem);
+
+/**
+ * @summary Create a reservation or concierge action request
+ */
+export const CreateAriaActionBody = zod.object({
+  type: zod.enum([
+    "reservation",
+    "room-service",
+    "spa",
+    "dining",
+    "transport",
+    "activity",
+    "human-concierge",
+  ]),
+  title: zod.string(),
+  details: zod.string(),
+  preferredTime: zod.string().nullish(),
+});
+
+/**
+ * @summary Analyze an uploaded image for resort assistance
+ */
+export const AnalyzeAriaImageBody = zod.object({
+  image: zod.instanceof(File),
+  prompt: zod.string().optional(),
+});
+
+export const AnalyzeAriaImageResponse = zod.object({
+  summary: zod.string(),
+  suggestions: zod.array(zod.string()),
+  detectedLanguage: zod.string().nullish(),
+});
+
+/**
+ * @summary Transcribe a guest voice message
+ */
+export const TranscribeAriaAudioBody = zod.object({
+  audio: zod.instanceof(File),
+  language: zod.string().optional(),
+});
+
+export const TranscribeAriaAudioResponse = zod.object({
+  text: zod.string(),
+  language: zod.string(),
+});
+
+/**
+ * @summary Turn Aria's response into speech
+ */
+export const SynthesizeAriaSpeechBody = zod.object({
+  text: zod.string(),
+  language: zod.string().optional(),
+});

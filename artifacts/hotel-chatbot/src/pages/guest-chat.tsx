@@ -4,6 +4,8 @@ import { Send, ArrowDown, Square, ArrowLeft } from "lucide-react";
 import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGuestStream } from "@/hooks/use-guest-stream";
+import { AriaComposer } from "@/components/chat/aria-composer";
+import { AriaSidebar } from "@/components/chat/aria-sidebar";
 import { ChatBubble } from "@/components/chat/chat-bubble";
 import { useAuthContext } from "@/contexts/auth-context";
 
@@ -24,7 +26,6 @@ export default function GuestChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const autoSentRef = useRef(false);
   const idCounter = useRef(0);
 
@@ -47,13 +48,6 @@ export default function GuestChatPage() {
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     if (distanceFromBottom < 200) scrollToBottom("smooth");
   }, [messages, streamedContent, scrollToBottom]);
-
-  const resizeTextarea = () => {
-    const t = textareaRef.current;
-    if (!t) return;
-    t.style.height = "auto";
-    t.style.height = `${Math.min(t.scrollHeight, 192)}px`;
-  };
 
   const doSend = useCallback(async (text: string) => {
     if (!text.trim() || isStreaming) return;
@@ -94,19 +88,9 @@ export default function GuestChatPage() {
     const text = input.trim();
     if (!text || isStreaming) return;
     setInput("");
-    setTimeout(resizeTextarea, 0);
     doSend(text);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const charCount = input.length;
-  const showCharCount = charCount > 150;
   const showStreamingBubble = isStreaming || !!streamedContent;
 
   return (
@@ -150,6 +134,7 @@ export default function GuestChatPage() {
               </motion.div>
             )}
           </AnimatePresence>
+          <AriaSidebar />
           {!isAuthenticated && (
             <Link href="/login">
               <button className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-primary/5">
@@ -224,57 +209,13 @@ export default function GuestChatPage() {
       </AnimatePresence>
 
       {/* Input */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/98 to-transparent pt-8 pb-5 px-4 md:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative bg-white rounded-2xl p-1.5 flex items-end shadow-md border border-border focus-within:border-primary/30 focus-within:shadow-lg transition-all duration-200">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => { setInput(e.target.value); resizeTextarea(); }}
-              onKeyDown={handleKeyDown}
-              placeholder="Message Aria…"
-              className="w-full max-h-48 min-h-[44px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 px-4 py-3 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed"
-              rows={1}
-              disabled={isStreaming}
-            />
-            <AnimatePresence>
-              {showCharCount && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className={`absolute bottom-3.5 right-14 text-[10px] tabular-nums pointer-events-none transition-colors ${charCount > 1800 ? "text-red-400/70" : "text-muted-foreground/40"}`}
-                >
-                  {charCount}
-                </motion.span>
-              )}
-            </AnimatePresence>
-            {isStreaming ? (
-              <motion.button
-                key="stop"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                onClick={stopStreaming}
-                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/30 flex items-center justify-center transition-all"
-              >
-                <Square className="w-3.5 h-3.5 text-muted-foreground fill-muted-foreground" />
-              </motion.button>
-            ) : (
-              <button
-                onClick={handleSend}
-                disabled={!input.trim()}
-                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-              >
-                <Send className="w-3.5 h-3.5 text-white" />
-              </button>
-            )}
-          </div>
-          <p className="text-center mt-2.5 text-[10px] text-muted-foreground/40 tracking-widest uppercase">
-            SEED Hotel Concierge · Powered by AI
-          </p>
-        </div>
-      </div>
+      <AriaComposer
+        input={input}
+        setInput={setInput}
+        handleSend={handleSend}
+        isStreaming={isStreaming}
+        stopStreaming={stopStreaming}
+      />
     </div>
   );
 }

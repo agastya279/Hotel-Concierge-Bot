@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuthContext } from "@/contexts/auth-context";
-import { useCreateOpenaiConversation, getListOpenaiConversationsQueryKey } from "@workspace/api-client-react";
+import { useCreateOpenaiConversation } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
@@ -130,8 +130,8 @@ function KeyboardShortcuts() {
           createConv(
             { data: { title: "New Conversation" } },
             {
-              onSuccess: (conv) => {
-                qc.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+              onSuccess: (conv: any) => {
+                qc.invalidateQueries({ queryKey: ["conversations"] });
                 setLocation(`/c/${conv.id}`);
               },
             }

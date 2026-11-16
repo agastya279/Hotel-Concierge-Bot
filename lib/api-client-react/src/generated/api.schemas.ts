@@ -84,6 +84,140 @@ export interface OpenaiError {
   error: string;
 }
 
+export interface AriaContext {
+  language: string;
+  preferences: string[];
+  interests: string[];
+  /** @nullable */
+  dietaryNeeds?: string | null;
+  /** @nullable */
+  travelParty: string | null;
+  /** @nullable */
+  stayDates?: string | null;
+}
+
+export interface AriaContextInput {
+  language?: string;
+  preferences?: string[];
+  interests?: string[];
+  /** @nullable */
+  dietaryNeeds?: string | null;
+  /** @nullable */
+  travelParty?: string | null;
+  /** @nullable */
+  stayDates?: string | null;
+}
+
+export type AriaRecommendationsInputCategory =
+  (typeof AriaRecommendationsInputCategory)[keyof typeof AriaRecommendationsInputCategory];
+
+export const AriaRecommendationsInputCategory = {
+  dining: "dining",
+  rooms: "rooms",
+  wellness: "wellness",
+  sports: "sports",
+  family: "family",
+  itinerary: "itinerary",
+  local: "local",
+} as const;
+
+export interface AriaRecommendationsInput {
+  /** @minLength 1 */
+  request: string;
+  category?: AriaRecommendationsInputCategory;
+  /**
+   * @minimum 1
+   * @maximum 14
+   */
+  days?: number;
+}
+
+export interface AriaRecommendation {
+  title: string;
+  description: string;
+  category: string;
+  /** @nullable */
+  timing?: string | null;
+  /** @nullable */
+  actionType?: string | null;
+}
+
+export interface AriaRecommendationsResponse {
+  title: string;
+  summary: string;
+  items: AriaRecommendation[];
+}
+
+export type AriaActionInputType =
+  (typeof AriaActionInputType)[keyof typeof AriaActionInputType];
+
+export const AriaActionInputType = {
+  reservation: "reservation",
+  "room-service": "room-service",
+  spa: "spa",
+  dining: "dining",
+  transport: "transport",
+  activity: "activity",
+  "human-concierge": "human-concierge",
+} as const;
+
+export interface AriaActionInput {
+  type: AriaActionInputType;
+  title: string;
+  details: string;
+  /** @nullable */
+  preferredTime?: string | null;
+}
+
+export type AriaActionStatus =
+  (typeof AriaActionStatus)[keyof typeof AriaActionStatus];
+
+export const AriaActionStatus = {
+  requested: "requested",
+  confirmed: "confirmed",
+  "in-progress": "in-progress",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export interface AriaAction {
+  id: number;
+  type: string;
+  title: string;
+  details: string;
+  /** @nullable */
+  preferredTime?: string | null;
+  status: AriaActionStatus;
+  createdAt: string;
+}
+
+export interface AriaVisionInput {
+  image: Blob;
+  prompt?: string;
+}
+
+export interface AriaVisionResponse {
+  summary: string;
+  suggestions: string[];
+  /** @nullable */
+  detectedLanguage?: string | null;
+}
+
+export interface AriaAudioInput {
+  audio: Blob;
+  language?: string;
+}
+
+export interface AriaTranscription {
+  text: string;
+  language: string;
+}
+
+export interface AriaSpeakInput {
+  text: string;
+  language?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */

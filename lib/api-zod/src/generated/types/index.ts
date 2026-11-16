@@ -6,6 +6,21 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./ariaAction";
+export * from "./ariaActionInput";
+export * from "./ariaActionInputType";
+export * from "./ariaActionStatus";
+export * from "./ariaAudioInput";
+export * from "./ariaContext";
+export * from "./ariaContextInput";
+export * from "./ariaRecommendation";
+export * from "./ariaRecommendationsInput";
+export * from "./ariaRecommendationsInputCategory";
+export * from "./ariaRecommendationsResponse";
+export * from "./ariaSpeakInput";
+export * from "./ariaTranscription";
+export * from "./ariaVisionInput";
+export * from "./ariaVisionResponse";
 export * from "./authorizationSessionHeaderParameter";
 export * from "./authUser";
 export * from "./authUserEnvelope";

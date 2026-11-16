@@ -17,6 +17,17 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AriaAction,
+  AriaActionInput,
+  AriaAudioInput,
+  AriaContext,
+  AriaContextInput,
+  AriaRecommendationsInput,
+  AriaRecommendationsResponse,
+  AriaSpeakInput,
+  AriaTranscription,
+  AriaVisionInput,
+  AriaVisionResponse,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   CreateOpenaiConversationBody,
@@ -1152,4 +1163,684 @@ export const useSendOpenaiMessage = <
   TContext
 > => {
   return useMutation(getSendOpenaiMessageMutationOptions(options));
+};
+
+/**
+ * @summary Get the guest's saved concierge context
+ */
+export const getGetAriaContextUrl = () => {
+  return `/api/aria/context`;
+};
+
+export const getAriaContext = async (
+  options?: RequestInit,
+): Promise<AriaContext> => {
+  return customFetch<AriaContext>(getGetAriaContextUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAriaContextQueryKey = () => {
+  return [`/api/aria/context`] as const;
+};
+
+export const getGetAriaContextQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAriaContext>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAriaContext>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAriaContextQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAriaContext>>> = ({
+    signal,
+  }) => getAriaContext({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAriaContext>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAriaContextQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAriaContext>>
+>;
+export type GetAriaContextQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the guest's saved concierge context
+ */
+
+export function useGetAriaContext<
+  TData = Awaited<ReturnType<typeof getAriaContext>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAriaContext>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAriaContextQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Save guest preferences and language context
+ */
+export const getUpdateAriaContextUrl = () => {
+  return `/api/aria/context`;
+};
+
+export const updateAriaContext = async (
+  ariaContextInput: AriaContextInput,
+  options?: RequestInit,
+): Promise<AriaContext> => {
+  return customFetch<AriaContext>(getUpdateAriaContextUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaContextInput),
+  });
+};
+
+export const getUpdateAriaContextMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAriaContext>>,
+    TError,
+    { data: BodyType<AriaContextInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAriaContext>>,
+  TError,
+  { data: BodyType<AriaContextInput> },
+  TContext
+> => {
+  const mutationKey = ["updateAriaContext"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAriaContext>>,
+    { data: BodyType<AriaContextInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateAriaContext(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAriaContextMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAriaContext>>
+>;
+export type UpdateAriaContextMutationBody = BodyType<AriaContextInput>;
+export type UpdateAriaContextMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Save guest preferences and language context
+ */
+export const useUpdateAriaContext = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAriaContext>>,
+    TError,
+    { data: BodyType<AriaContextInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateAriaContext>>,
+  TError,
+  { data: BodyType<AriaContextInput> },
+  TContext
+> => {
+  return useMutation(getUpdateAriaContextMutationOptions(options));
+};
+
+/**
+ * @summary Generate personalized resort recommendations or an itinerary
+ */
+export const getCreateAriaRecommendationsUrl = () => {
+  return `/api/aria/recommendations`;
+};
+
+export const createAriaRecommendations = async (
+  ariaRecommendationsInput: AriaRecommendationsInput,
+  options?: RequestInit,
+): Promise<AriaRecommendationsResponse> => {
+  return customFetch<AriaRecommendationsResponse>(
+    getCreateAriaRecommendationsUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(ariaRecommendationsInput),
+    },
+  );
+};
+
+export const getCreateAriaRecommendationsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAriaRecommendations>>,
+    TError,
+    { data: BodyType<AriaRecommendationsInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAriaRecommendations>>,
+  TError,
+  { data: BodyType<AriaRecommendationsInput> },
+  TContext
+> => {
+  const mutationKey = ["createAriaRecommendations"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAriaRecommendations>>,
+    { data: BodyType<AriaRecommendationsInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createAriaRecommendations(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAriaRecommendationsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAriaRecommendations>>
+>;
+export type CreateAriaRecommendationsMutationBody =
+  BodyType<AriaRecommendationsInput>;
+export type CreateAriaRecommendationsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Generate personalized resort recommendations or an itinerary
+ */
+export const useCreateAriaRecommendations = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAriaRecommendations>>,
+    TError,
+    { data: BodyType<AriaRecommendationsInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createAriaRecommendations>>,
+  TError,
+  { data: BodyType<AriaRecommendationsInput> },
+  TContext
+> => {
+  return useMutation(getCreateAriaRecommendationsMutationOptions(options));
+};
+
+/**
+ * @summary List guest action requests
+ */
+export const getListAriaActionsUrl = () => {
+  return `/api/aria/actions`;
+};
+
+export const listAriaActions = async (
+  options?: RequestInit,
+): Promise<AriaAction[]> => {
+  return customFetch<AriaAction[]>(getListAriaActionsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListAriaActionsQueryKey = () => {
+  return [`/api/aria/actions`] as const;
+};
+
+export const getListAriaActionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listAriaActions>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAriaActions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListAriaActionsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listAriaActions>>> = ({
+    signal,
+  }) => listAriaActions({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listAriaActions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListAriaActionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listAriaActions>>
+>;
+export type ListAriaActionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List guest action requests
+ */
+
+export function useListAriaActions<
+  TData = Awaited<ReturnType<typeof listAriaActions>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAriaActions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListAriaActionsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a reservation or concierge action request
+ */
+export const getCreateAriaActionUrl = () => {
+  return `/api/aria/actions`;
+};
+
+export const createAriaAction = async (
+  ariaActionInput: AriaActionInput,
+  options?: RequestInit,
+): Promise<AriaAction> => {
+  return customFetch<AriaAction>(getCreateAriaActionUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaActionInput),
+  });
+};
+
+export const getCreateAriaActionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAriaAction>>,
+    TError,
+    { data: BodyType<AriaActionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAriaAction>>,
+  TError,
+  { data: BodyType<AriaActionInput> },
+  TContext
+> => {
+  const mutationKey = ["createAriaAction"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAriaAction>>,
+    { data: BodyType<AriaActionInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createAriaAction(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAriaActionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAriaAction>>
+>;
+export type CreateAriaActionMutationBody = BodyType<AriaActionInput>;
+export type CreateAriaActionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a reservation or concierge action request
+ */
+export const useCreateAriaAction = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAriaAction>>,
+    TError,
+    { data: BodyType<AriaActionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createAriaAction>>,
+  TError,
+  { data: BodyType<AriaActionInput> },
+  TContext
+> => {
+  return useMutation(getCreateAriaActionMutationOptions(options));
+};
+
+/**
+ * @summary Analyze an uploaded image for resort assistance
+ */
+export const getAnalyzeAriaImageUrl = () => {
+  return `/api/aria/vision`;
+};
+
+export const analyzeAriaImage = async (
+  ariaVisionInput: AriaVisionInput,
+  options?: RequestInit,
+): Promise<AriaVisionResponse> => {
+  const formData = new FormData();
+  formData.append(`image`, ariaVisionInput.image);
+  if (ariaVisionInput.prompt !== undefined) {
+    formData.append(`prompt`, ariaVisionInput.prompt);
+  }
+
+  return customFetch<AriaVisionResponse>(getAnalyzeAriaImageUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const getAnalyzeAriaImageMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeAriaImage>>,
+    TError,
+    { data: BodyType<AriaVisionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof analyzeAriaImage>>,
+  TError,
+  { data: BodyType<AriaVisionInput> },
+  TContext
+> => {
+  const mutationKey = ["analyzeAriaImage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof analyzeAriaImage>>,
+    { data: BodyType<AriaVisionInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return analyzeAriaImage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AnalyzeAriaImageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof analyzeAriaImage>>
+>;
+export type AnalyzeAriaImageMutationBody = BodyType<AriaVisionInput>;
+export type AnalyzeAriaImageMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Analyze an uploaded image for resort assistance
+ */
+export const useAnalyzeAriaImage = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeAriaImage>>,
+    TError,
+    { data: BodyType<AriaVisionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof analyzeAriaImage>>,
+  TError,
+  { data: BodyType<AriaVisionInput> },
+  TContext
+> => {
+  return useMutation(getAnalyzeAriaImageMutationOptions(options));
+};
+
+/**
+ * @summary Transcribe a guest voice message
+ */
+export const getTranscribeAriaAudioUrl = () => {
+  return `/api/aria/transcribe`;
+};
+
+export const transcribeAriaAudio = async (
+  ariaAudioInput: AriaAudioInput,
+  options?: RequestInit,
+): Promise<AriaTranscription> => {
+  const formData = new FormData();
+  formData.append(`audio`, ariaAudioInput.audio);
+  if (ariaAudioInput.language !== undefined) {
+    formData.append(`language`, ariaAudioInput.language);
+  }
+
+  return customFetch<AriaTranscription>(getTranscribeAriaAudioUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const getTranscribeAriaAudioMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof transcribeAriaAudio>>,
+    TError,
+    { data: BodyType<AriaAudioInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof transcribeAriaAudio>>,
+  TError,
+  { data: BodyType<AriaAudioInput> },
+  TContext
+> => {
+  const mutationKey = ["transcribeAriaAudio"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof transcribeAriaAudio>>,
+    { data: BodyType<AriaAudioInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return transcribeAriaAudio(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TranscribeAriaAudioMutationResult = NonNullable<
+  Awaited<ReturnType<typeof transcribeAriaAudio>>
+>;
+export type TranscribeAriaAudioMutationBody = BodyType<AriaAudioInput>;
+export type TranscribeAriaAudioMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Transcribe a guest voice message
+ */
+export const useTranscribeAriaAudio = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof transcribeAriaAudio>>,
+    TError,
+    { data: BodyType<AriaAudioInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof transcribeAriaAudio>>,
+  TError,
+  { data: BodyType<AriaAudioInput> },
+  TContext
+> => {
+  return useMutation(getTranscribeAriaAudioMutationOptions(options));
+};
+
+/**
+ * @summary Turn Aria's response into speech
+ */
+export const getSynthesizeAriaSpeechUrl = () => {
+  return `/api/aria/speak`;
+};
+
+export const synthesizeAriaSpeech = async (
+  ariaSpeakInput: AriaSpeakInput,
+  options?: RequestInit,
+): Promise<Blob> => {
+  return customFetch<Blob>(getSynthesizeAriaSpeechUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ariaSpeakInput),
+  });
+};
+
+export const getSynthesizeAriaSpeechMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof synthesizeAriaSpeech>>,
+    TError,
+    { data: BodyType<AriaSpeakInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof synthesizeAriaSpeech>>,
+  TError,
+  { data: BodyType<AriaSpeakInput> },
+  TContext
+> => {
+  const mutationKey = ["synthesizeAriaSpeech"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof synthesizeAriaSpeech>>,
+    { data: BodyType<AriaSpeakInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return synthesizeAriaSpeech(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SynthesizeAriaSpeechMutationResult = NonNullable<
+  Awaited<ReturnType<typeof synthesizeAriaSpeech>>
+>;
+export type SynthesizeAriaSpeechMutationBody = BodyType<AriaSpeakInput>;
+export type SynthesizeAriaSpeechMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Turn Aria's response into speech
+ */
+export const useSynthesizeAriaSpeech = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof synthesizeAriaSpeech>>,
+    TError,
+    { data: BodyType<AriaSpeakInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof synthesizeAriaSpeech>>,
+  TError,
+  { data: BodyType<AriaSpeakInput> },
+  TContext
+> => {
+  return useMutation(getSynthesizeAriaSpeechMutationOptions(options));
 };

@@ -3,14 +3,10 @@ import { useParams, useSearch, Link } from "wouter";
 import { Send, Sparkles, ArrowDown, Square, Pencil, Check, X, ArrowLeft } from "lucide-react";
 import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  useGetOpenaiConversation,
-  useListOpenaiMessages,
-  getListOpenaiConversationsQueryKey,
-  getGetOpenaiConversationQueryKey,
-} from "@workspace/api-client-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChatStream } from "@/hooks/use-chat-stream";
+import { AriaComposer } from "@/components/chat/aria-composer";
+import { AriaSidebar } from "@/components/chat/aria-sidebar";
 import { ChatBubble } from "@/components/chat/chat-bubble";
 import { apiFetch } from "@/lib/api-url";
 
@@ -22,7 +18,6 @@ export default function ChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
   const [showScrollBtn, setShowScrollBtn] = useState(false);
@@ -31,14 +26,28 @@ export default function ChatPage() {
   const autoSentRef = useRef(false);
   const titleGeneratedRef = useRef(false);
 
-  const { data: conversation, isLoading: isConvLoading } = useGetOpenaiConversation(
-    conversationId as number,
-    { query: { enabled: !!conversationId } }
-  );
-  const { data: messages = [], isLoading: isMessagesLoading } = useListOpenaiMessages(
-    conversationId as number,
-    { query: { enabled: !!conversationId } }
-  );
+  const { data: conversation, isLoading: isConvLoading } = useQuery({
+    queryKey: ["conversation", conversationId],
+    queryFn: async () => {
+      if (!conversationId) return null;
+      const res = await apiFetch(`/api/openai/conversations/${conversationId}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    enabled: !!conversationId
+  });
+
+  const { data: messages = [], isLoading: isMessagesLoading } = useQuery({
+    queryKey: ["messages", conversationId],
+    queryFn: async () => {
+      if (!conversationId) return [];
+      const res = await apiFetch(`/api/openai/conversations/${conversationId}/messages`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    enabled: !!conversationId
+  });
+
   const { sendMessage, stopStreaming, isStreaming, streamedContent, optimisticUserMessage } =
     useChatStream(conversationId);
 
@@ -47,7 +56,7 @@ export default function ChatPage() {
     if (!conversationId || isStreaming) return;
     if (messages.length >= 2) {
       titleGeneratedRef.current = true;
-      const firstUserMsg = messages.find((m) => m.role === "user");
+      const firstUserMsg = messages.find((m: any) => m.role === "user");
       if (!firstUserMsg) return;
       apiFetch(`/api/openai/conversations/${conversationId}/generate-title`, {
         method: "POST",
@@ -58,8 +67,8 @@ export default function ChatPage() {
         .then((r) => r.ok ? r.json() : null)
         .then((data) => {
           if (data?.title) {
-            queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-            queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(conversationId) });
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+            queryClient.invalidateQueries({ queryKey: ["conversation", conversationId] });
           }
         })
         .catch(() => {});
@@ -92,8 +101,8 @@ export default function ChatPage() {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ title: newTitle }),
       });
-      queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-      queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(conversationId) });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["conversation", conversationId] });
     } catch {}
   };
   const cancelEditTitle = () => setEditingTitle(false);
@@ -112,22 +121,12 @@ export default function ChatPage() {
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) scrollToBottom("smooth");
   }, [messages, streamedContent, optimisticUserMessage, scrollToBottom]);
 
-  const resizeTextarea = () => {
-    const t = textareaRef.current;
-    if (!t) return;
-    t.style.height = "auto";
-    t.style.height = `${Math.min(t.scrollHeight, 192)}px`;
-  };
   const handleSend = () => {
     const text = input.trim();
     if (!text || isStreaming) return;
     setInput("");
-    setTimeout(resizeTextarea, 0);
     sendMessage(text);
     setTimeout(() => scrollToBottom("smooth"), 50);
-  };
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
   if (isConvLoading || isMessagesLoading) {
@@ -142,8 +141,6 @@ export default function ChatPage() {
   }
 
   const allMessages = messages;
-  const charCount = input.length;
-  const showCharCount = charCount > 150;
 
   return (
     <div className="flex flex-col h-full w-full relative bg-background">
@@ -172,18 +169,21 @@ export default function ChatPage() {
             </button>
           )}
         </div>
-        <AnimatePresence>
-          {isStreaming && (
-            <motion.div
-              initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
-              transition={{ duration: 0.25 }}
-              className="flex items-center gap-2 text-xs text-primary/70 font-medium shrink-0"
-            >
-              <motion.div className="w-1.5 h-1.5 rounded-full bg-primary" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
-              Thinking…
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="flex items-center gap-3">
+          <AnimatePresence>
+            {isStreaming && (
+              <motion.div
+                initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.25 }}
+                className="flex items-center gap-2 text-xs text-primary/70 font-medium shrink-0"
+              >
+                <motion.div className="w-1.5 h-1.5 rounded-full bg-primary" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
+                Thinking…
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AriaSidebar conversationId={conversationId} />
+        </div>
       </div>
 
       {/* Messages */}
@@ -196,7 +196,7 @@ export default function ChatPage() {
             <p className="text-muted-foreground text-sm">Say hello to Aria, your Seed concierge.</p>
           </motion.div>
         )}
-        {allMessages.map((msg, i) => (
+        {allMessages.map((msg: any, i: number) => (
           <ChatBubble key={msg.id} role={msg.role as "user" | "assistant"} content={msg.content} index={i} timestamp={new Date(msg.createdAt)} />
         ))}
         {optimisticUserMessage && <ChatBubble role="user" content={optimisticUserMessage} index={allMessages.length} timestamp={new Date()} />}
@@ -220,41 +220,14 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Input */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/98 to-transparent pt-8 pb-5 px-4 md:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative bg-white rounded-2xl p-1.5 flex items-end shadow-md border border-border focus-within:border-primary/30 focus-within:shadow-lg transition-all duration-200">
-            <textarea ref={textareaRef} value={input}
-              onChange={(e) => { setInput(e.target.value); resizeTextarea(); }}
-              onKeyDown={handleKeyDown} placeholder="Message Aria…"
-              className="w-full max-h-48 min-h-[44px] bg-transparent border-none resize-none focus:outline-none focus:ring-0 px-4 py-3 text-foreground placeholder:text-muted-foreground/50 text-sm leading-relaxed"
-              rows={1} disabled={isStreaming}
-            />
-            <AnimatePresence>
-              {showCharCount && (
-                <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                  className={`absolute bottom-3.5 right-14 text-[10px] tabular-nums pointer-events-none transition-colors ${charCount > 1800 ? "text-red-400/70" : "text-muted-foreground/40"}`}
-                >{charCount}</motion.span>
-              )}
-            </AnimatePresence>
-            {isStreaming ? (
-              <motion.button key="stop" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
-                onClick={stopStreaming} className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/30 flex items-center justify-center transition-all"
-              >
-                <Square className="w-3.5 h-3.5 text-muted-foreground fill-muted-foreground" />
-              </motion.button>
-            ) : (
-              <button onClick={handleSend} disabled={!input.trim()}
-                className="shrink-0 mb-1 ml-2 h-9 w-9 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-              >
-                <Send className="w-3.5 h-3.5 text-white" />
-              </button>
-            )}
-          </div>
-          <p className="text-center mt-2.5 text-[10px] text-muted-foreground/40 tracking-widest uppercase">
-            SEED Hotel Concierge · Powered by AI
-          </p>
-        </div>
-      </div>
+      <AriaComposer
+        input={input}
+        setInput={setInput}
+        handleSend={handleSend}
+        isStreaming={isStreaming}
+        stopStreaming={stopStreaming}
+        conversationId={conversationId}
+      />
     </div>
   );
 }

@@ -95,7 +95,7 @@ export function Testimonials() {
           {testimonials.map((t, i) => (
             <motion.div
               key={t.name}
-              variants={card}
+              variants={card as any}
               whileHover={{ y: -6, transition: { duration: 0.3 } }}
               className="p-6 rounded-2xl bg-white border border-border/60 hover:border-primary/20 hover:shadow-md transition-all duration-300"
             >

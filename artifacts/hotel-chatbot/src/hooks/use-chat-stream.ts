@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getListOpenaiMessagesQueryKey } from "@workspace/api-client-react";
 import { apiFetch } from "@/lib/api-url";
 
 export function useChatStream(conversationId: number | undefined) {
@@ -74,7 +73,7 @@ export function useChatStream(conversationId: number | undefined) {
       }
     } finally {
       await queryClient.invalidateQueries({
-        queryKey: getListOpenaiMessagesQueryKey(conversationId),
+        queryKey: ["messages", conversationId],
       });
       setTimeout(() => {
         setOptimisticUserMessage(null);
