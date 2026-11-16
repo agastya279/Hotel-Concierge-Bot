@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Copy, Check } from "lucide-react";
+import { User, Copy, Check, Volume2, Pause, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useAriaSpeak } from "@/hooks/use-aria";
 
 interface ChatBubbleProps {
   role: "user" | "assistant";
@@ -25,7 +26,16 @@ function formatTime(date: Date): string {
 export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }: ChatBubbleProps) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
   const { toast } = useToast();
+  const speak = useAriaSpeak();
+
+  useEffect(() => () => {
+    audioRef.current?.pause();
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+  }, []);
 
   const handleCopy = async () => {
     if (!content) return;
@@ -36,6 +46,31 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast({ title: "Copy failed", description: "Please try again" });
+    }
+  };
+
+  const handleSpeak = async () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+    try {
+      const audioBlob = await speak.mutateAsync({ text: content });
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+      const url = URL.createObjectURL(audioBlob);
+      audioUrlRef.current = url;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => {
+        setIsPlaying(false);
+        toast({ title: "Audio playback failed", variant: "destructive" });
+      };
+      await audio.play();
+      setIsPlaying(true);
+    } catch {
+      toast({ title: "Could not play Aria's response", variant: "destructive" });
     }
   };
 
@@ -72,24 +107,37 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
               <span className="text-[10px] text-muted-foreground/35 tabular-nums">{formatTime(timestamp)}</span>
             )}
             {!isUser && content && !isStreaming && (
-              <motion.button
-                onClick={handleCopy}
-                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                title="Copy response"
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-md hover:bg-muted text-muted-foreground/40 hover:text-foreground"
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  {copied ? (
-                    <motion.span key="check" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    </motion.span>
-                  ) : (
-                    <motion.span key="copy" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
-                      <Copy className="w-3.5 h-3.5" />
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+              <>
+                <motion.button
+                  onClick={handleSpeak}
+                  disabled={speak.isPending}
+                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                  title={isPlaying ? "Pause Aria's response" : "Listen to Aria's response"}
+                  aria-label={isPlaying ? "Pause response audio" : "Play response audio"}
+                  className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 p-1 rounded-md hover:bg-muted text-muted-foreground/50 hover:text-foreground disabled:opacity-50"
+                >
+                  {speak.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                </motion.button>
+                <motion.button
+                  onClick={handleCopy}
+                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                  title="Copy response"
+                  aria-label="Copy response"
+                  className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 p-1 rounded-md hover:bg-muted text-muted-foreground/40 hover:text-foreground"
+                >
+                  <AnimatePresence mode="wait" initial={false}>
+                    {copied ? (
+                      <motion.span key="check" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                      </motion.span>
+                    ) : (
+                      <motion.span key="copy" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>
+                        <Copy className="w-3.5 h-3.5" />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </>
             )}
           </div>
         </div>

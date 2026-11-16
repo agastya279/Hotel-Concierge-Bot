@@ -10,6 +10,8 @@ import {
   SendOpenaiMessageParams,
   SendOpenaiMessageBody,
 } from "@workspace/api-zod";
+import { buildAriaContextInstructions, loadAriaGuestContext } from "../aria/shared";
+import { formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
 
 const router: IRouter = Router();
 
@@ -206,6 +208,8 @@ router.post("/conversations/:id/messages", async (req, res) => {
       content: m.content,
     }));
     chatHistory.push({ role: "user", content: body.content });
+    const context = await loadAriaGuestContext(userId);
+    const knowledge = searchAriaKnowledge(body.content, 5);
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -217,7 +221,14 @@ router.post("/conversations/:id/messages", async (req, res) => {
     const stream = await openai.chat.completions.create({
       model: "gpt-5.2",
       max_completion_tokens: 8192,
-      messages: [{ role: "system", content: HOTEL_SYSTEM_PROMPT }, ...chatHistory],
+      messages: [{
+        role: "system",
+        content: [
+          HOTEL_SYSTEM_PROMPT,
+          buildAriaContextInstructions(context),
+          formatAriaKnowledgeInstructions(knowledge),
+        ].join("\n\n"),
+      }, ...chatHistory],
       stream: true,
     });
 

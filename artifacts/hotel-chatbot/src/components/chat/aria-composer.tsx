@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AriaComposerProps {
   input: string;
-  setInput: (value: string) => void;
+  setInput: React.Dispatch<React.SetStateAction<string>>;
   handleSend: () => void;
   isStreaming: boolean;
   stopStreaming: () => void;
@@ -60,6 +60,10 @@ export function AriaComposer({
     }
 
     try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+        toast({ title: "Voice recording is not supported in this browser", variant: "destructive" });
+        return;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
@@ -96,23 +100,32 @@ export function AriaComposer({
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Convert to base64
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Image = reader.result as string;
-      try {
-        const res = await visionMutation.mutateAsync({ base64Image, conversationId });
-        if (res.text) {
-          setInput(input ? `${input}\n[Image Analysis: ${res.text}]` : `[Image Analysis: ${res.text}]`);
-          toast({ title: "Image analyzed" });
-        }
-      } catch (err) {
-        toast({ title: "Failed to analyze image", variant: "destructive" });
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast({ title: "Choose a JPG, PNG, or WebP image", variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image must be under 5 MB", variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    try {
+      const res = await visionMutation.mutateAsync({
+        file,
+        conversationId,
+        prompt: "Describe the image briefly and explain anything relevant to a SEED Resort guest. Do not claim resort availability or identify private people.",
+      });
+      if (res.summary) {
+        const analysis = `Image analysis: ${res.summary}`;
+        setInput((current) => current.trim() ? `${current.trim()}\n\n${analysis}` : analysis);
+        toast({ title: "Image analyzed", description: "Review the summary, then send it to Aria." });
       }
+    } catch {
+      toast({ title: "Failed to analyze image", variant: "destructive" });
+    } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const charCount = input.length;
@@ -129,7 +142,7 @@ export function AriaComposer({
             <div className="flex items-center gap-1">
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleImageSelect}

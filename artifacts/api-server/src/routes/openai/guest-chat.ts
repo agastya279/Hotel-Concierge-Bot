@@ -1,5 +1,7 @@
 import { Router, type IRouter } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { buildAriaContextInstructions, getAriaSessionId, loadAriaGuestContext } from "../aria/shared";
+import { formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
 
 const router: IRouter = Router();
 
@@ -82,7 +84,7 @@ Every room features Smart Glass Windows, Biometric Room Entry, Ambient AI Speake
 
 Always answer as Aria — enthusiastic, proud of SEED Resort, and deeply knowledgeable about every system. If you cannot answer something specific, offer to connect the guest with the relevant team.`;
 
-router.post("/guest-chat", async (req, res) => {
+router.post("/guest-chat", async (req, res): Promise<void> => {
   try {
     const parsed = parseBody(req.body);
     if (!parsed) {
@@ -90,6 +92,13 @@ router.post("/guest-chat", async (req, res) => {
       return;
     }
     const { content, history } = parsed;
+    const sessionId = getAriaSessionId(req);
+    if (!sessionId) {
+      res.status(400).json({ error: "x-session-id required" });
+      return;
+    }
+    const context = await loadAriaGuestContext(sessionId);
+    const knowledge = searchAriaKnowledge(content, 5);
 
     const chatHistory: { role: "user" | "assistant"; content: string }[] = history.map((m) => ({
       role: m.role,
@@ -105,7 +114,14 @@ router.post("/guest-chat", async (req, res) => {
     const stream = await openai.chat.completions.create({
       model: "gpt-5.2",
       max_completion_tokens: 8192,
-      messages: [{ role: "system", content: HOTEL_SYSTEM_PROMPT }, ...chatHistory],
+      messages: [{
+        role: "system",
+        content: [
+          HOTEL_SYSTEM_PROMPT,
+          buildAriaContextInstructions(context),
+          formatAriaKnowledgeInstructions(knowledge),
+        ].join("\n\n"),
+      }, ...chatHistory],
       stream: true,
     });
 

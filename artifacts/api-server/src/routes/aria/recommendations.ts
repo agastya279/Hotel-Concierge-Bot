@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { requireGuestSessionId } from "./shared";
+import { buildAriaContextInstructions, loadAriaGuestContext, requireGuestSessionId } from "./shared";
+import { formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
 
 const router: IRouter = Router();
 router.post("/recommendations", async (req, res): Promise<void> => {
@@ -11,16 +12,38 @@ router.post("/recommendations", async (req, res): Promise<void> => {
       ? req.body.request
       : typeof req.body?.prompt === "string"
         ? req.body.prompt
-        : "Generate a personalized resort itinerary.";
+        : typeof req.body?.query === "string"
+          ? req.body.query
+          : "Generate a personalized resort itinerary.";
+    const context = await loadAriaGuestContext(sessionId);
+    const knowledge = searchAriaKnowledge(prompt, 5);
     const completion = await openai.chat.completions.create({
       model: "gpt-5.2",
       max_completion_tokens: 4096,
       messages: [
         {
           role: "system",
-          content: "Create concise personalized SEED Resort recommendations and itinerary suggestions. Return JSON with title, summary, and items. Each item must have title, description, category, timing, and actionType.",
+          content: [
+            "Create concise personalized SEED Resort recommendations and itinerary suggestions.",
+            "Never claim live availability, prices, or a confirmed booking. Do not invent opening hours or travel times.",
+            "Return only valid JSON with title, summary, and items. Each item must have title, description, category, timing, and actionType.",
+            buildAriaContextInstructions(context),
+            formatAriaKnowledgeInstructions(knowledge),
+          ].join("\n\n"),
         },
-        { role: "user", content: JSON.stringify({ sessionId, ...req.body, request: prompt }) },
+        {
+          role: "user",
+          content: JSON.stringify({
+            request: prompt,
+            preferences: context.preferences,
+            interests: context.interests,
+            dietaryNeeds: context.dietaryNeeds,
+            travelParty: context.travelParty,
+            stayDates: context.stayDates,
+            category: req.body?.category,
+            days: req.body?.days,
+          }),
+        },
       ],
     });
     const raw = completion.choices[0]?.message?.content ?? "";
@@ -34,7 +57,12 @@ router.post("/recommendations", async (req, res): Promise<void> => {
         items: [],
       };
     }
-    const items = Array.isArray(parsed.items) ? parsed.items : [];
+    const items = Array.isArray(parsed.items) ? parsed.items.filter((item) => {
+      return item && typeof item === "object" &&
+        typeof (item as Record<string, unknown>).title === "string" &&
+        typeof (item as Record<string, unknown>).description === "string" &&
+        typeof (item as Record<string, unknown>).category === "string";
+    }) : [];
     res.json({
       title: parsed.title || "Your SEED Resort plan",
       summary: parsed.summary || raw,
