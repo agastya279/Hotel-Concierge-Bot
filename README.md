@@ -1,193 +1,129 @@
-# SEED Resort Hotel Concierge
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5.9" />
-  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white" alt="Express 5" />
-  <img src="https://img.shields.io/badge/OpenAI-GPT-5.2-412991?logo=openai&logoColor=white" alt="OpenAI GPT 5.2" />
-  <img src="https://img.shields.io/badge/DB-PostgreSQL-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Tooling-pnpm-F69220?logo=pnpm&logoColor=white" alt="pnpm" />
-</p>
+# SEED Resort Concierge
 
-A full-stack AI concierge experience for SEED Resort, built as a TypeScript monorepo with a streaming OpenAI-powered backend and a polished React frontend. The system supports both signed-in guest experiences with persistent conversation history and guest-mode chat without a database.
+### Hospitality, with an intelligent first response.
 
-The project is centered around Aria, the resort concierge, who can answer guest questions, provide recommendations, and help with stay-related information in a friendly, modern interface.
+A full-stack AI concierge for SEED Resort. Guests can ask Aria for help in a polished, streaming chat experience—without an account—or sign in to keep their conversations and return to them later.
 
-## Overview
+[Features](#-product-experience) · [Architecture](#-architecture) · [Local setup](#-local-development) · [Deployment](#-deployment)
 
-This repository combines:
+<br />
 
-- A Node.js/Express backend with session-aware auth
-- A PostgreSQL + Drizzle data layer for saved conversations
-- An OpenAI integration for AI-powered chat responses
-- A Vite + React + Tailwind frontend with a rich hotel-brand experience
-- A monorepo build system using pnpm workspaces and TypeScript project references
+<img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5.9" />
+<img src="https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=black" alt="React and Vite" />
+<img src="https://img.shields.io/badge/Express-5-111111?logo=express&logoColor=white" alt="Express 5" />
+<img src="https://img.shields.io/badge/PostgreSQL-Drizzle-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL and Drizzle" />
+<img src="https://img.shields.io/badge/AI-OpenAI-412991?logo=openai&logoColor=white" alt="OpenAI" />
+<img src="https://img.shields.io/badge/Workspace-pnpm-F69220?logo=pnpm&logoColor=white" alt="pnpm" />
 
-The architecture is designed for rapid iteration, clean API boundaries, and a modern full-stack developer workflow.
+</div>
 
-## Why this project matters
+---
 
-Hospitality experiences increasingly depend on instant, personalized support. This app provides a smart concierge-style interface where guests can:
+## The idea
 
-- ask about amenities, local attractions, or restaurant suggestions
-- start a chat without signing in
-- preserve conversation history when authenticated
-- interact with a fast, streaming AI experience
-- browse previous resort chats from a sidebar dashboard
+Great hospitality is personal, immediate, and effortless. **SEED Resort Concierge** brings those qualities into a digital guest experience: Aria answers resort questions and offers recommendations through a conversational interface designed to feel at home in a premium resort brand.
 
-It is a strong example of a production-style AI application that blends UX, API design, AI orchestration, and data persistence.
+The product is built around a low-friction promise: **start chatting immediately; sign in when you want your history saved.** Guests can use an in-memory chat, while authenticated users can revisit, search, rename, and manage database-backed conversations.
 
-## Core features
+> **Product principle:** remove friction for the first question, then make the experience more useful over time.
 
-### AI assistant experience
+## ✨ Product experience
 
-- Streaming chat responses from OpenAI
-- Guest chat mode with in-memory conversation flow
-- Authenticated chat mode with persistent DB-backed history
-- Response rendering with markdown support and copy buttons
-- Animated typing state and messaging experience
+- **Talk to Aria** — a resort concierge experience powered by OpenAI, with incremental streaming responses.
+- **Start without signing in** — guest messages stay in the guest flow and are not written to the conversation database.
+- **Keep a conversation history** — signed-in guests can save and revisit their chats.
+- **Move quickly** — welcome-page request suggestions, a new-chat shortcut (`⌘K` / `Ctrl+K`), and a stop-generation control.
+- **Make answers usable** — assistant responses render Markdown, show timestamps, and can be copied.
+- **Stay organized** — conversation sidebar groups chats by date, supports search, and offers rename and delete actions.
+- **Enjoy a considered interface** — resort-inspired dark surfaces, sage-green accents, motion, and a responsive chat layout.
 
-### Hospitality-focused UX
+## 🧭 Architecture
 
-- Elegant landing page with immersive resort background styling
-- Glassmorphism interface and dark resort theme
-- Quick action chips for common guest requests
-- Date-grouped conversation history and search experience
-- New conversation shortcuts using keyboard commands
-
-### Conversation management
-
-- Save conversations for authenticated users
-- Rename conversations inline
-- Auto-generate conversation titles after initial exchange
-- Sidebar organization by time group
-- Conversation deletion and session-aware user scoping
-
-### Authentication and authorization
-
-- Session-based auth middleware
-- Per-user isolation for conversation records
-- Guest access without DB writes
-- Sign-in flow that upgrades the guest experience to saved history
-
-### Developer ergonomics
-
-- TypeScript monorepo structure
-- Shared schemas generated from OpenAPI specs
-- React Query hooks generated from API contracts
-- API validation with Zod
-- Root-level build and typecheck orchestration
-
-## Tech stack
-
-### Frontend
-
-- React
-- Vite
-- Tailwind CSS
-- Framer Motion
-- Wouter for routing
-- TanStack React Query
-- Radix UI primitives
-- React Markdown for assistant message rendering
-
-### Backend
-
-- Node.js
-- Express 5
-- PostgreSQL
-- Drizzle ORM
-- Zod validation
-- OpenAI SDK
-- SSE-style streaming responses
-
-### Tooling
-
-- pnpm workspaces
-- TypeScript 5.9
-- esbuild for backend bundling
-- Orval for API client generation
-- project references for composite TypeScript builds
-
-## Architecture
-
-```text
-SEED Resort Concierge
-├── artifacts/
-│   ├── api-server/           # Express backend + AI orchestration
-│   ├── hotel-chatbot/        # React frontend + UX
-│   └── mockup-sandbox/       # design/sandbox experimentation
-├── lib/
-│   ├── api-spec/              # OpenAPI contract and codegen config
-│   ├── api-client-react/      # generated React client hooks
-│   ├── api-zod/               # generated Zod schemas
-│   ├── db/                    # DB schema and connection logic
-│   ├── integrations/          # shared integration layer
-│   ├── integrations-openai-ai-react/
-│   ├── integrations-openai-ai-server/
-│   ├── replit-auth-web/
-│   └── ...
-├── scripts/
-├── .env.example
-├── package.json
-├── pnpm-workspace.yaml
-├── tsconfig.base.json
-├── tsconfig.json
-└── replit.md
+```mermaid
+flowchart LR
+    Guest[Guest or signed-in user] --> Web[React + Vite web app]
+    Web -->|Guest streaming request| GuestAPI[Express API · guest chat]
+    Web -->|Authenticated chat and history| ChatAPI[Express API · conversations]
+    ChatAPI --> Auth[Auth/session middleware]
+    ChatAPI --> DB[(PostgreSQL · Drizzle ORM)]
+    GuestAPI --> AI[OpenAI-compatible integration]
+    ChatAPI --> AI
+    Spec[OpenAPI contract] --> Gen[Orval code generation]
+    Gen --> Hooks[React Query client hooks]
+    Gen --> Schemas[Zod schemas]
+    Hooks --> Web
+    Schemas --> ChatAPI
 ```
 
-The project follows a practical multi-package layout:
+### Request lifecycle
 
-- frontend and backend are isolated artifacts
-- generated API code is kept separate from handwritten app logic
-- shared libraries provide typed contracts and integrations
-- root package handles workspace orchestration
+1. The React client sends a chat request to the Express API.
+2. The API selects the guest or authenticated conversation flow.
+3. Authenticated conversation operations are scoped to the current user; guest chat does not persist messages to PostgreSQL.
+4. The server calls the configured OpenAI-compatible service and streams output to the client.
+5. The frontend consumes the stream with `fetch` and a `ReadableStream`, updating the assistant message as chunks arrive. An `AbortController` allows the guest to stop generation.
 
-## Repository structure
+### API contract and shared packages
+
+The workspace separates the API contract, generated frontend client, validation schemas, database layer, and applications. OpenAPI code generation uses Orval to produce React Query hooks and Zod schemas. Keep generated output and hand-written application code distinct; update the API specification and run code generation when the contract changes.
+
+## 🧰 Technology
+
+| Area | Technologies |
+| --- | --- |
+| Web client | React, Vite, TypeScript, Tailwind CSS, Framer Motion |
+| Routing and data | Wouter, TanStack React Query |
+| UI | Radix UI, Lucide, React Markdown |
+| API | Node.js 24, Express 5, TypeScript |
+| AI | OpenAI SDK and configurable OpenAI-compatible endpoint |
+| Persistence | PostgreSQL, Drizzle ORM |
+| Contracts | OpenAPI, Orval, Zod |
+| Build and workspace | pnpm workspaces, TypeScript project references, esbuild |
+
+## 📁 Repository map
 
 ```text
 .
-├── .agents/
-├── .env.example
-├── .gitignore
-├── .npmrc
-├─��� .replit
-├── .replitignore
 ├── artifacts/
-│   ├── api-server/
-│   ├── hotel-chatbot/
-│   └── mockup-sandbox/
+│   ├── api-server/                  # Express API, chat routes, server build
+│   ├── hotel-chatbot/               # React/Vite guest-facing application
+│   └── mockup-sandbox/              # UI experimentation
 ├── lib/
-│   ├── api-client-react/
-│   ├── api-spec/
-│   ├── api-zod/
-│   ├── db/
-│   ├── integrations/
+│   ├── api-spec/                    # OpenAPI specification and codegen config
+│   ├── api-client-react/            # Generated React Query client
+│   ├── api-zod/                     # Generated Zod schemas
+│   ├── db/                          # Drizzle schema and database connection
+│   ├── integrations/                # Shared integration packages
 │   ├── integrations-openai-ai-react/
 │   ├── integrations-openai-ai-server/
 │   └── replit-auth-web/
-├── scripts/
-├── package.json
-├── pnpm-lock.yaml
+├── scripts/                         # Workspace utility scripts
+├── .env.example                     # Environment variable template
+├── package.json                     # Root scripts and workspace metadata
 ├── pnpm-workspace.yaml
-├── replit.md
 ├── tsconfig.base.json
-├── tsconfig.json
-├── seed-resort-netlify-package.zip
-├── seed-resort-netlify-site.zip
-└── README.md
+└── replit.md                        # Additional project and implementation notes
 ```
 
-## Getting started
+### Application responsibilities
 
-### Prerequisites
+- `artifacts/hotel-chatbot` owns the welcome experience, guest and authenticated chat UI, streaming hooks, and client-side navigation.
+- `artifacts/api-server` owns API routing, AI request handling, authentication integration, and server-side conversation operations.
+- `lib/api-spec`, `lib/api-client-react`, and `lib/api-zod` provide the contract-first API tooling.
+- `lib/db` provides PostgreSQL and Drizzle integration.
 
-- Node.js 24+
-- pnpm
-- PostgreSQL instance
-- OpenAI-compatible API access or configured AI integration
+## 🚀 Local development
 
-### 1. Install dependencies
+### Requirements
+
+- Node.js **24**
+- pnpm (the repository's `preinstall` script rejects other package managers)
+- PostgreSQL
+- An OpenAI API key or compatible AI integration endpoint
+
+### 1. Install
 
 ```bash
 git clone https://github.com/agastya279/Hotel-Concierge-Bot.git
@@ -195,151 +131,123 @@ cd Hotel-Concierge-Bot
 pnpm install
 ```
 
-### 2. Configure environment variables
+### 2. Configure environment
 
-Copy the example environment file and fill in your values:
+Create a local `.env` from the checked-in template:
 
 ```bash
 cp .env.example .env
 ```
 
-The repository expects variables such as:
+Set the values appropriate to your environment:
 
 ```dotenv
 DATABASE_URL=postgresql://user:password@localhost:5432/seed_hotel
-AI_INTEGRATIONS_OPENAI_BASE_URL=https://...
-AI_INTEGRATIONS_OPENAI_API_KEY=your_openai_api_key_here
-SESSION_SECRET=your_random_session_secret_here
+AI_INTEGRATIONS_OPENAI_BASE_URL=https://your-openai-compatible-endpoint
+AI_INTEGRATIONS_OPENAI_API_KEY=your_api_key
+SESSION_SECRET=replace_with_a_long_random_secret
 REPL_ID=
 REPLIT_DOMAINS=
 REPLIT_DEV_DOMAIN=
 ```
 
-For local development, the example file is a useful guide. The app is designed to work with Replit AI integrations or a custom OpenAI-compatible endpoint.
+Do not commit `.env` or expose server-side API credentials in frontend code. The `.env.example` file is the source of truth for the environment variables currently documented by the repository. Hosted deployments may require additional provider-specific configuration; consult the deployment handoff and hosting platform settings.
 
-### 3. Run the app locally
+### 3. Start the applications
 
-Start the backend:
+Run the API and frontend in separate terminals from the repository root:
 
 ```bash
 pnpm --dir artifacts/api-server run dev
 ```
 
-Start the frontend:
-
 ```bash
 pnpm --dir artifacts/hotel-chatbot run dev
 ```
 
-The backend listens on the configured API port, while the hotel chatbot frontend runs via Vite and provides the guest experience.
+The frontend's Vite server is configured to bind to `0.0.0.0`. Configure the frontend's API destination and any provider-specific auth settings for your local environment as needed.
 
-## Useful workspace commands
-
-From the repository root:
+### 4. Validate and build
 
 ```bash
-pnpm install
+# Type-check workspace libraries and applications
 pnpm run typecheck
+
+# Type-check first, then build packages that define a build script
 pnpm run build
 ```
 
-Package-specific commands are defined in the individual package manifests, such as:
+Useful package-level commands:
 
 ```bash
 pnpm --dir artifacts/api-server run typecheck
-pnpm --dir artifacts/hotel-chatbot run typecheck
 pnpm --dir artifacts/api-server run build
+pnpm --dir artifacts/hotel-chatbot run typecheck
 pnpm --dir artifacts/hotel-chatbot run build
 ```
 
-## Project behavior
+## 🧑‍💻 Engineering notes
 
-### Guest mode
+### Streaming
 
-Guests can chat without storing data in the database. This mode is optimized for quick access and onboarding without friction. The app can route directly to chat flow and use in-memory conversation storage.
+The frontend reads the chat response using `fetch` and `ReadableStream`; it does not rely on `EventSource`. Both authenticated and guest chat flows use an `AbortController` so the user can stop an in-progress response. The documented stream uses content chunks followed by a completion marker.
 
-### Authenticated mode
+### Data ownership
 
-Authenticated users get:
+Authenticated conversations are associated with the current user. Conversation reads and mutations should include both the conversation identifier and owner scope in their database predicates. Guest chat is intentionally separate and does not write conversation history to the database.
 
-- persistent conversation history
-- saved conversation titles
-- per-user chat ownership and access control
-- inline rename/editing for conversation metadata
+### TypeScript workspace
 
-### Streaming AI
+Packages use TypeScript composite-project configuration and references from the root `tsconfig.json`. Run type-checking from the workspace root to validate the related packages together. JavaScript bundling is handled by the relevant package build tools rather than TypeScript declaration output.
 
-The platform uses streaming responses rather than waiting for the entire completion before sending output. This creates a more natural chat-like interaction and supports richer UI feedback such as typing indicators and live streaming updates.
+### API client generation
 
-### API contracts and generated client code
+The repository documents API generation through the `@workspace/api-spec` package. When changing a documented API contract, regenerate the client and validation code using the package script:
 
-The repository uses a generated client pattern from the OpenAPI spec. This is a good fit for a modern monorepo because it keeps frontend and backend aligned around a single API contract.
+```bash
+pnpm --filter @workspace/api-spec run codegen
+```
 
-The pipeline appears to be:
+Some app-specific endpoints may not be represented in generated hooks; follow the existing client patterns in the relevant feature when adding or modifying endpoints.
 
-- define OpenAPI contract in the API spec module
-- generate Zod schemas for validation
-- generate React Query hooks for client use
-- consume the generated contracts in the frontend UI
+## ☁️ Deployment
 
-## Design system notes
+The frontend includes Netlify deployment configuration and a deployment guide at [`artifacts/hotel-chatbot/NETLIFY_DEPLOYMENT.md`](artifacts/hotel-chatbot/NETLIFY_DEPLOYMENT.md). That guide describes deploying the static frontend separately from the Express API.
 
-The interface uses a warm green / resort palette and a dark background with a polished, premium travel aesthetic. The brand styling strongly emphasizes hospitality, calmness, and polished service.
+At a high level:
 
-Key colors and design direction noted in the repo include:
+1. Build the frontend and publish its static output to Netlify.
+2. Deploy the API separately to a Node-compatible host.
+3. Set the frontend's public API base URL and browser-safe auth configuration.
+4. Configure the API's secrets, database connection, and allowed frontend origin for credentialed requests.
+5. Verify the deployed frontend can reach the API over HTTPS.
 
-- primary green: `#52b788`
-- darker green accent: `#2d6a4f`
-- dark background tones for contrast
-- serif headlines for a boutique hotel identity
+The frontend is not the AI service: chat streaming and saved-conversation endpoints require the separately deployed API. Never put OpenAI API credentials, auth secret keys, or session secrets in static frontend assets. See the [API handoff](artifacts/hotel-chatbot/api-server-handoff.md) for backend deployment requirements.
 
-## Deployment notes
+## 🎨 Visual direction
 
-The repository includes deployment-oriented artifacts and integration notes for hosting the frontend on Netlify and keeping the API server separate. The frontend package includes Netlify deployment configuration and a deployment guide in the artifact directory.
+The interface's design language is warm, calm, and resort-inspired:
 
-This project also includes Replit-focused config and environment support, making it suitable for hosted development and quick iteration.
+- Sage green: `#52b788`
+- Deep green: `#2d6a4f`
+- Dark charcoal surfaces
+- Serif display headings for a boutique-hospitality feel
+- Soft motion and glass-like overlays to create depth without distracting from the conversation
 
-## Development considerations
+## 🛣️ Possible next steps
 
-### Monorepo conventions
-
-The root project is configured as a TypeScript project with composite package references. The repo enforces an incremental and typed workspace build model instead of a loose, ad hoc structure.
-
-### API validation and safety
-
-The backend emphasizes structured validation and typed endpoints, reducing drift between the server and client. Schemas and generated clients help maintain a consistent contract.
-
-### Performance and UX
-
-The frontend is designed to feel fast and responsive, with features such as:
-
-- hierarchical sidebar organization
-- streaming assistant output
-- quick actions to reduce friction
-- markdown response rendering
-- keyboard shortcuts for instant task execution
-
-## Roadmap / extension ideas
-
-This app is a strong base for several hospitality or assistant-driven enhancements, including:
-
-- room booking and check-in flows
-- local recommendations with maps and routing
-- multilingual concierge support
-- guest satisfaction surveys
-- staff escalation / human handoff
-- integration with property management systems
+The current foundation can support future hospitality workflows such as booking and check-in requests, multilingual assistance, curated local recommendations, staff handoff, guest feedback, and property-management integrations. These are potential extensions—not claims about current functionality.
 
 ## License
 
-This repository currently declares MIT licensing at the root package level, which indicates the project is intended to be open-source and reusable as a starter/template for similar AI concierge experiences.
-
-## Final thoughts
-
-SEED Resort Hotel Concierge is a polished, modern example of an AI-powered hospitality assistant. It blends end-user delight with engineering discipline: strong API contracts, typed monorepo design, streaming AI orchestration, and a visually compelling UI.
-
-If you are looking for a project that demonstrates how to combine frontend experience, backend orchestration, AI integration, and developer tooling in one cohesive app, this repo is a strong example.
+The root `package.json` declares the project license as MIT. Refer to the repository's license file and distribution terms when reusing the code.
 
 ---
 
-Built for SEED Resort • Powered by TypeScript, React, Express, PostgreSQL, and OpenAI
+<div align="center">
+
+**A more thoughtful first response for every resort guest.**
+
+Built with TypeScript · React · Express · PostgreSQL · OpenAI
+
+</div>
