@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { buildAriaContextInstructions, loadAriaGuestContext, requireGuestSessionId } from "./shared";
 import { formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
+import { ARIA_CHAT_MODEL, getGroqClient } from "../../lib/aria/groq";
 
 const router: IRouter = Router();
 router.post("/recommendations", async (req, res): Promise<void> => {
@@ -17,9 +17,10 @@ router.post("/recommendations", async (req, res): Promise<void> => {
           : "Generate a personalized resort itinerary.";
     const context = await loadAriaGuestContext(sessionId);
     const knowledge = searchAriaKnowledge(prompt, 5);
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.2",
+    const completion = await getGroqClient().chat.completions.create({
+      model: ARIA_CHAT_MODEL,
       max_completion_tokens: 4096,
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",

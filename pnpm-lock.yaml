@@ -178,9 +178,6 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
-      '@workspace/integrations-openai-ai-server':
-        specifier: workspace:*
-        version: link:../../lib/integrations-openai-ai-server
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -196,6 +193,9 @@ importers:
       http-proxy-middleware:
         specifier: ^4.1.1
         version: 4.1.1
+      openai:
+        specifier: ^6.32.0
+        version: 6.32.0(zod@4.3.6)
       openid-client:
         specifier: ^6.8.2
         version: 6.8.2

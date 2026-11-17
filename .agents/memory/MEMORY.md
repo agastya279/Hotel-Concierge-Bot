@@ -1,0 +1,1 @@
+- [Groq speech model terms](groq-speech-terms.md) — Orpheus TTS may require organization-admin terms acceptance even when Groq chat works.

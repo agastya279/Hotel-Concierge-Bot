@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { ARIA_CHAT_MODEL, getGroqClient } from "../../lib/aria/groq";
 
 const router: IRouter = Router();
 router.post("/vision", async (req, res): Promise<void> => {
@@ -14,8 +14,8 @@ router.post("/vision", async (req, res): Promise<void> => {
     return;
   }
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.2",
+    const completion = await getGroqClient().chat.completions.create({
+      model: ARIA_CHAT_MODEL,
       max_completion_tokens: 2048,
       messages: [{
         role: "user",

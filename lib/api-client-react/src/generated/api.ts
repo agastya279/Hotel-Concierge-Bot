@@ -1945,7 +1945,7 @@ export const synthesizeAriaSpeech = async (
 };
 
 export const getSynthesizeAriaSpeechMutationOptions = <
-  TError = ErrorType<unknown>,
+  TError = ErrorType<void>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1986,13 +1986,13 @@ export type SynthesizeAriaSpeechMutationResult = NonNullable<
   Awaited<ReturnType<typeof synthesizeAriaSpeech>>
 >;
 export type SynthesizeAriaSpeechMutationBody = BodyType<AriaSpeakInput>;
-export type SynthesizeAriaSpeechMutationError = ErrorType<unknown>;
+export type SynthesizeAriaSpeechMutationError = ErrorType<void>;
 
 /**
  * @summary Turn Aria's response into speech
  */
 export const useSynthesizeAriaSpeech = <
-  TError = ErrorType<unknown>,
+  TError = ErrorType<void>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<

@@ -447,10 +447,14 @@ paths:
         "200":
           description: Audio response
           content:
-            audio/mpeg:
+            audio/wav:
               schema:
                 type: string
                 format: binary
+        "409":
+          description: Groq speech model terms must be accepted by an organization admin
+        "422":
+          description: Voice output is available only in English and Arabic
 components:
   parameters:
     AriaSessionHeader:

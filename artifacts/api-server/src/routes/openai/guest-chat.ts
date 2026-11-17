@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { buildAriaContextInstructions, getAriaSessionId, loadAriaGuestContext } from "../aria/shared";
 import { ARIA_KNOWLEDGE_DOCUMENTS, formatAriaKnowledgeInstructions } from "../../lib/aria/knowledge-base";
+import { ARIA_CHAT_MODEL, getGroqClient } from "../../lib/aria/groq";
 
 const router: IRouter = Router();
 
@@ -111,8 +111,8 @@ router.post("/guest-chat", async (req, res): Promise<void> => {
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    const stream = await openai.chat.completions.create({
-      model: "gpt-5.2",
+    const stream = await getGroqClient().chat.completions.create({
+      model: ARIA_CHAT_MODEL,
       max_completion_tokens: 8192,
       messages: [{
         role: "system",

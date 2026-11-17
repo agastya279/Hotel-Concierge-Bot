@@ -1,6 +1,5 @@
 import { Router, type IRouter, type Request } from "express";
 import { db, conversations, messages } from "@workspace/db";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { eq, asc, and } from "drizzle-orm";
 import {
   CreateOpenaiConversationBody,
@@ -12,6 +11,7 @@ import {
 } from "@workspace/api-zod";
 import { buildAriaContextInstructions, loadAriaGuestContext } from "../aria/shared";
 import { ARIA_KNOWLEDGE_DOCUMENTS, formatAriaKnowledgeInstructions } from "../../lib/aria/knowledge-base";
+import { ARIA_CHAT_MODEL, getGroqClient } from "../../lib/aria/groq";
 
 const router: IRouter = Router();
 
@@ -218,8 +218,8 @@ router.post("/conversations/:id/messages", async (req, res) => {
 
     let fullResponse = "";
 
-    const stream = await openai.chat.completions.create({
-      model: "gpt-5.2",
+    const stream = await getGroqClient().chat.completions.create({
+      model: ARIA_CHAT_MODEL,
       max_completion_tokens: 8192,
       messages: [{
         role: "system",
@@ -294,8 +294,8 @@ router.post("/conversations/:id/generate-title", async (req, res) => {
       .where(and(eq(conversations.id, id), eq(conversations.sessionId, userId)));
     if (!conv) { res.status(404).json({ error: "Conversation not found" }); return; }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.2",
+    const completion = await getGroqClient().chat.completions.create({
+      model: ARIA_CHAT_MODEL,
       max_completion_tokens: 20,
       messages: [
         {

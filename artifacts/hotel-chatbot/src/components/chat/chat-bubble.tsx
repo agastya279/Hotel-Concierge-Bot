@@ -4,7 +4,7 @@ import { User, Copy, Check, Volume2, Pause, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useAriaSpeak } from "@/hooks/use-aria";
+import { useAriaContext, useAriaSpeak } from "@/hooks/use-aria";
 
 interface ChatBubbleProps {
   role: "user" | "assistant";
@@ -31,6 +31,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
   const audioUrlRef = useRef<string | null>(null);
   const { toast } = useToast();
   const speak = useAriaSpeak();
+  const ariaContext = useAriaContext();
 
   useEffect(() => () => {
     audioRef.current?.pause();
@@ -56,7 +57,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
       return;
     }
     try {
-      const audioBlob = await speak.mutateAsync({ text: content });
+      const audioBlob = await speak.mutateAsync({ text: content, language: ariaContext.data?.language ?? "auto" });
       if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
       const url = URL.createObjectURL(audioBlob);
       audioUrlRef.current = url;
@@ -69,8 +70,12 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
       };
       await audio.play();
       setIsPlaying(true);
-    } catch {
-      toast({ title: "Could not play Aria's response", variant: "destructive" });
+    } catch (err) {
+      toast({
+        title: "Could not play Aria's response",
+        description: err instanceof Error ? err.message : undefined,
+        variant: "destructive",
+      });
     }
   };
 
@@ -110,7 +115,7 @@ export function ChatBubble({ role, content, isStreaming, index = 0, timestamp }:
               <>
                 <motion.button
                   onClick={handleSpeak}
-                  disabled={speak.isPending}
+                  disabled={speak.isPending || ariaContext.isLoading}
                   whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                   title={isPlaying ? "Pause Aria's response" : "Listen to Aria's response"}
                   aria-label={isPlaying ? "Pause response audio" : "Play response audio"}

@@ -191,13 +191,16 @@ export function useAriaTranscribe() {
 
 export function useAriaSpeak() {
   return useMutation({
-    mutationFn: async ({ text }: { text: string }) => {
+    mutationFn: async ({ text, language }: { text: string; language?: string }) => {
       const res = await apiFetch("/api/aria/speak", {
         method: "POST",
         headers: { ...sessionHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, language }),
       });
-      if (!res.ok) throw new Error("Could not create Aria's audio response");
+      if (!res.ok) {
+        const result = await res.json().catch(() => null);
+        throw new Error(typeof result?.error === "string" ? result.error : "Could not create Aria's audio response");
+      }
       return res.blob();
     },
   });

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { ARIA_KNOWLEDGE_DOCUMENTS, formatAriaKnowledgeInstructions, searchAriaKnowledge } from "../../lib/aria/knowledge-base";
+import { ARIA_CHAT_MODEL, getGroqClient } from "../../lib/aria/groq";
 
 const router: IRouter = Router();
 router.post("/knowledge/search", async (req, res): Promise<void> => {
@@ -9,8 +9,8 @@ router.post("/knowledge/search", async (req, res): Promise<void> => {
   try {
     const matchedDocuments = searchAriaKnowledge(query, 4);
     const documents = matchedDocuments.length ? matchedDocuments : ARIA_KNOWLEDGE_DOCUMENTS;
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.2",
+    const completion = await getGroqClient().chat.completions.create({
+      model: ARIA_CHAT_MODEL,
       max_completion_tokens: 2048,
       messages: [
         {
