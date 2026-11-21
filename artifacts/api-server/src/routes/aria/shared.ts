@@ -38,10 +38,15 @@ function stringArray(value: unknown): string[] {
 }
 
 export async function loadAriaGuestContext(sessionId: string): Promise<AriaGuestContext> {
-  const [row] = await db
-    .select()
-    .from(ariaGuestContexts)
-    .where(eq(ariaGuestContexts.sessionId, sessionId));
+  let row: typeof ariaGuestContexts.$inferSelect | undefined;
+  try {
+    [row] = await db
+      .select()
+      .from(ariaGuestContexts)
+      .where(eq(ariaGuestContexts.sessionId, sessionId));
+  } catch {
+    // Database availability is optional for guest chat.
+  }
   const preferences = row?.preferences && typeof row.preferences === "object"
     ? row.preferences as Record<string, unknown>
     : {};
