@@ -16,6 +16,7 @@ import { AppLayout } from "@/components/layout/app-layout";
 import WelcomePage from "@/pages/welcome";
 import ChatPage from "@/pages/chat";
 import GuestChatPage from "@/pages/guest-chat";
+import FitnessPage from "@/pages/fitness";
 import LoginPage from "@/pages/login";
 import GetStartedPage from "@/pages/get-started";
 import YourCardPage from "@/pages/your-card";
@@ -100,12 +101,7 @@ function ClerkQueryClientCacheInvalidator() {
   useEffect(() => {
     const unsubscribe = addListener(({ user }) => {
       const userId = user?.id ?? null;
-      if (
-        prevUserIdRef.current !== undefined &&
-        prevUserIdRef.current !== userId
-      ) {
-        qc.clear();
-      }
+      if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== userId) qc.clear();
       prevUserIdRef.current = userId;
     });
     return unsubscribe;
@@ -127,18 +123,13 @@ function KeyboardShortcuts() {
       if (modKey && e.key === "k") {
         e.preventDefault();
         if (isAuthenticated) {
-          createConv(
-            { data: { title: "New Conversation" } },
-            {
-              onSuccess: (conv: any) => {
-                qc.invalidateQueries({ queryKey: ["conversations"] });
-                setLocation(`/c/${conv.id}`);
-              },
-            }
-          );
-        } else {
-          setLocation("/chat");
-        }
+          createConv({ data: { title: "New Conversation" } }, {
+            onSuccess: (conv: any) => {
+              qc.invalidateQueries({ queryKey: ["conversations"] });
+              setLocation(`/c/${conv.id}`);
+            },
+          });
+        } else setLocation("/chat");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -149,29 +140,11 @@ function KeyboardShortcuts() {
 }
 
 function SignInPage() {
-  return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignIn
-        routing="path"
-        path={`${basePath}/sign-in`}
-        signUpUrl={`${basePath}/sign-up`}
-        fallbackRedirectUrl={`${basePath}/chat`}
-      />
-    </div>
-  );
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4"><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} fallbackRedirectUrl={`${basePath}/chat`} /></div>;
 }
 
 function SignUpPage() {
-  return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignUp
-        routing="path"
-        path={`${basePath}/sign-up`}
-        signInUrl={`${basePath}/sign-in`}
-        fallbackRedirectUrl={`${basePath}/get-started`}
-      />
-    </div>
-  );
+  return <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4"><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} fallbackRedirectUrl={`${basePath}/get-started`} /></div>;
 }
 
 function Router() {
@@ -181,6 +154,7 @@ function Router() {
       <Switch>
         <Route path="/" component={WelcomePage} />
         <Route path="/chat" component={GuestChatPage} />
+        <Route path="/fitness" component={FitnessPage} />
         <Route path="/c/:id" component={ChatPage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/login/*?" component={LoginPage} />
@@ -207,18 +181,8 @@ function ClerkApp() {
       signInUrl={`${basePath}/login`}
       signUpUrl={`${basePath}/sign-up`}
       localization={{
-        signIn: {
-          start: {
-            title: "Welcome back",
-            subtitle: "Sign in to your SEED Resort account",
-          },
-        },
-        signUp: {
-          start: {
-            title: "Create your account",
-            subtitle: "Join SEED Resort for a personalized experience",
-          },
-        },
+        signIn: { start: { title: "Welcome back", subtitle: "Sign in to your SEED Resort account" } },
+        signUp: { start: { title: "Create your account", subtitle: "Join SEED Resort for a personalized experience" } },
       }}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
@@ -237,9 +201,5 @@ function ClerkApp() {
 }
 
 export default function App() {
-  return (
-    <WouterRouter base={basePath}>
-      <ClerkApp />
-    </WouterRouter>
-  );
+  return <WouterRouter base={basePath}><ClerkApp /></WouterRouter>;
 }

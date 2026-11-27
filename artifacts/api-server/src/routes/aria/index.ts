@@ -5,6 +5,7 @@ import actionsRouter from "./actions";
 import knowledgeRouter from "./knowledge";
 import visionRouter from "./vision";
 import voiceRouter from "./voice";
+import fitnessCoachRouter from "./fitness-coach";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(actionsRouter);
 router.use(knowledgeRouter);
 router.use(visionRouter);
 router.use(voiceRouter);
+router.use(fitnessCoachRouter);
 
 export default router;
